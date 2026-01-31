@@ -13,7 +13,16 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Register custom middleware aliases
+        $middleware->alias([
+            'tenant' => \App\Http\Middleware\IdentifyTenant::class,
+            'can' => \App\Http\Middleware\CheckPermission::class,
+        ]);
+
+        // Apply tenant identification middleware to API routes
+        $middleware->api(prepend: [
+            \App\Http\Middleware\IdentifyTenant::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
