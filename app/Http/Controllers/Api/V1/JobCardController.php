@@ -36,7 +36,7 @@ class JobCardController extends ApiController
                 'Job cards retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve job cards: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve job cards: '.$e->getMessage(), 500);
         }
     }
 
@@ -49,7 +49,7 @@ class JobCardController extends ApiController
             $data = $request->validated();
             $data['tenant_id'] = auth()->user()->tenant_id;
             $data['job_number'] = $this->generateJobNumber();
-            
+
             // Initialize amounts to zero
             $data['subtotal'] = $data['subtotal'] ?? 0;
             $data['tax_amount'] = $data['tax_amount'] ?? 0;
@@ -65,7 +65,7 @@ class JobCardController extends ApiController
                 201
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create job card: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to create job card: '.$e->getMessage(), 500);
         }
     }
 
@@ -76,13 +76,13 @@ class JobCardController extends ApiController
     {
         try {
             $jobCard->load(['customer', 'vehicle', 'assignedTo', 'jobCardItems']);
-            
+
             return $this->successResponse(
                 new JobCardResource($jobCard),
                 'Job card retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve job card: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve job card: '.$e->getMessage(), 500);
         }
     }
 
@@ -99,7 +99,7 @@ class JobCardController extends ApiController
                 'Job card updated successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update job card: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update job card: '.$e->getMessage(), 500);
         }
     }
 
@@ -116,7 +116,7 @@ class JobCardController extends ApiController
                 'Job card deleted successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to delete job card: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete job card: '.$e->getMessage(), 500);
         }
     }
 
@@ -127,14 +127,21 @@ class JobCardController extends ApiController
     {
         try {
             $validated = $request->validate([
+                'product_id' => ['nullable', 'integer', 'exists:products,id'],
                 'item_type' => ['required', 'string', 'in:service,part'],
-                'description' => ['required', 'string'],
                 'quantity' => ['required', 'numeric', 'min:0.01'],
                 'unit_price' => ['required', 'numeric', 'min:0'],
+                'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
+                'discount' => ['nullable', 'numeric', 'min:0'],
+                'notes' => ['nullable', 'string'],
             ]);
 
-            $validated['total_price'] = $validated['quantity'] * $validated['unit_price'];
-            
+            // Calculate total
+            $subtotal = $validated['quantity'] * $validated['unit_price'];
+            $taxAmount = isset($validated['tax_rate']) ? ($subtotal * $validated['tax_rate'] / 100) : 0;
+            $discount = $validated['discount'] ?? 0;
+            $validated['total'] = $subtotal + $taxAmount - $discount;
+
             $item = $jobCard->jobCardItems()->create($validated);
 
             // Recalculate job card totals
@@ -146,7 +153,7 @@ class JobCardController extends ApiController
                 201
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to add item: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to add item: '.$e->getMessage(), 500);
         }
     }
 
@@ -163,9 +170,9 @@ class JobCardController extends ApiController
             $jobCard->update(['status' => $validated['status']]);
 
             // Set timestamps based on status
-            if ($validated['status'] === 'in_progress' && !$jobCard->started_at) {
+            if ($validated['status'] === 'in_progress' && ! $jobCard->started_at) {
                 $jobCard->update(['started_at' => now()]);
-            } elseif ($validated['status'] === 'completed' && !$jobCard->completed_at) {
+            } elseif ($validated['status'] === 'completed' && ! $jobCard->completed_at) {
                 $jobCard->update(['completed_at' => now()]);
             }
 
@@ -174,7 +181,7 @@ class JobCardController extends ApiController
                 'Job card status updated successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update status: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update status: '.$e->getMessage(), 500);
         }
     }
 
@@ -186,7 +193,7 @@ class JobCardController extends ApiController
         $prefix = 'JOB';
         $year = date('Y');
         $month = date('m');
-        
+
         $lastJob = JobCard::where('job_number', 'LIKE', "{$prefix}-{$year}{$month}%")
             ->orderBy('job_number', 'desc')
             ->first();
@@ -206,10 +213,26 @@ class JobCardController extends ApiController
      */
     private function recalculateJobCardTotals(JobCard $jobCard): void
     {
-        $subtotal = $jobCard->jobCardItems()->sum('total_price');
-        $taxRate = 0.15; // 15% tax rate
-        $taxAmount = $subtotal * $taxRate;
-        $totalAmount = $subtotal + $taxAmount - ($jobCard->discount_amount ?? 0);
+        // Sum all item totals (which already include tax calculations)
+        $total = $jobCard->jobCardItems()->sum('total');
+
+        // Calculate subtotal (without tax)
+        $subtotal = $jobCard->jobCardItems()
+            ->get()
+            ->sum(function ($item) {
+                return $item->quantity * $item->unit_price;
+            });
+
+        // Calculate total tax amount
+        $taxAmount = $jobCard->jobCardItems()
+            ->get()
+            ->sum(function ($item) {
+                $subtotal = $item->quantity * $item->unit_price;
+
+                return $item->tax_rate ? ($subtotal * $item->tax_rate / 100) : 0;
+            });
+
+        $totalAmount = $total - ($jobCard->discount_amount ?? 0);
 
         $jobCard->update([
             'subtotal' => $subtotal,

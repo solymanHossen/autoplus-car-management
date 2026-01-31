@@ -35,7 +35,7 @@ class CustomerController extends ApiController
                 'Customers retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve customers: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve customers: '.$e->getMessage(), 500);
         }
     }
 
@@ -56,7 +56,7 @@ class CustomerController extends ApiController
                 201
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create customer: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to create customer: '.$e->getMessage(), 500);
         }
     }
 
@@ -67,13 +67,13 @@ class CustomerController extends ApiController
     {
         try {
             $customer->loadCount('vehicles');
-            
+
             return $this->successResponse(
                 new CustomerResource($customer),
                 'Customer retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve customer: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve customer: '.$e->getMessage(), 500);
         }
     }
 
@@ -90,7 +90,7 @@ class CustomerController extends ApiController
                 'Customer updated successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update customer: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update customer: '.$e->getMessage(), 500);
         }
     }
 
@@ -107,7 +107,7 @@ class CustomerController extends ApiController
                 'Customer deleted successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to delete customer: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete customer: '.$e->getMessage(), 500);
         }
     }
 }

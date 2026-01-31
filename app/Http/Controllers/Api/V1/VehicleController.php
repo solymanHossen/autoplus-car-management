@@ -35,7 +35,7 @@ class VehicleController extends ApiController
                 'Vehicles retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve vehicles: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve vehicles: '.$e->getMessage(), 500);
         }
     }
 
@@ -58,7 +58,7 @@ class VehicleController extends ApiController
                 201
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create vehicle: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to create vehicle: '.$e->getMessage(), 500);
         }
     }
 
@@ -69,13 +69,13 @@ class VehicleController extends ApiController
     {
         try {
             $vehicle->load('customer');
-            
+
             return $this->successResponse(
                 new VehicleResource($vehicle),
                 'Vehicle retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve vehicle: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve vehicle: '.$e->getMessage(), 500);
         }
     }
 
@@ -92,7 +92,7 @@ class VehicleController extends ApiController
                 'Vehicle updated successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update vehicle: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update vehicle: '.$e->getMessage(), 500);
         }
     }
 
@@ -109,7 +109,7 @@ class VehicleController extends ApiController
                 'Vehicle deleted successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to delete vehicle: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete vehicle: '.$e->getMessage(), 500);
         }
     }
 }

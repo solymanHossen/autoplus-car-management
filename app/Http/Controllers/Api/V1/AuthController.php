@@ -25,7 +25,7 @@ class AuthController extends ApiController
     {
         try {
             $data = $request->validated();
-            
+
             // Get tenant_id from the authenticated user or from request
             // For now, we'll use a default tenant or require it in the request
             $data['tenant_id'] = $request->input('tenant_id') ?? auth()->user()?->tenant_id ?? '1';
@@ -48,7 +48,7 @@ class AuthController extends ApiController
                 'token_type' => 'Bearer',
             ], 'User registered successfully', 201);
         } catch (\Exception $e) {
-            return $this->errorResponse('Registration failed: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Registration failed: '.$e->getMessage(), 500);
         }
     }
 
@@ -60,7 +60,7 @@ class AuthController extends ApiController
         try {
             $credentials = $request->validated();
 
-            if (!Auth::attempt($credentials)) {
+            if (! Auth::attempt($credentials)) {
                 return $this->errorResponse('Invalid credentials', 401);
             }
 
@@ -73,7 +73,7 @@ class AuthController extends ApiController
                 'token_type' => 'Bearer',
             ], 'Login successful');
         } catch (\Exception $e) {
-            return $this->errorResponse('Login failed: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Login failed: '.$e->getMessage(), 500);
         }
     }
 
@@ -85,7 +85,7 @@ class AuthController extends ApiController
         try {
             /** @var User $user */
             $user = Auth::user();
-            
+
             // If using Sanctum tokens
             if (method_exists($user, 'currentAccessToken')) {
                 $user->currentAccessToken()->delete();
@@ -93,7 +93,7 @@ class AuthController extends ApiController
 
             return $this->successResponse(null, 'Logged out successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse('Logout failed: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Logout failed: '.$e->getMessage(), 500);
         }
     }
 
@@ -105,7 +105,7 @@ class AuthController extends ApiController
         try {
             /** @var User $user */
             $user = Auth::user();
-            
+
             // Revoke old token
             if (method_exists($user, 'currentAccessToken')) {
                 $user->currentAccessToken()->delete();
@@ -119,7 +119,7 @@ class AuthController extends ApiController
                 'token_type' => 'Bearer',
             ], 'Token refreshed successfully');
         } catch (\Exception $e) {
-            return $this->errorResponse('Token refresh failed: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Token refresh failed: '.$e->getMessage(), 500);
         }
     }
 
@@ -136,7 +136,7 @@ class AuthController extends ApiController
                 'User retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve user: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve user: '.$e->getMessage(), 500);
         }
     }
 
@@ -151,6 +151,6 @@ class AuthController extends ApiController
         }
 
         // Fallback to a simple token (not recommended for production)
-        return base64_encode($user->id . '|' . time());
+        return base64_encode($user->id.'|'.time());
     }
 }

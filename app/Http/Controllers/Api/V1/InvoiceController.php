@@ -9,7 +9,6 @@ use App\Http\Requests\StoreInvoiceRequest;
 use App\Http\Resources\InvoiceResource;
 use App\Models\Invoice;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -35,7 +34,7 @@ class InvoiceController extends ApiController
                 'Invoices retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve invoices: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve invoices: '.$e->getMessage(), 500);
         }
     }
 
@@ -60,7 +59,7 @@ class InvoiceController extends ApiController
                 201
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create invoice: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to create invoice: '.$e->getMessage(), 500);
         }
     }
 
@@ -71,13 +70,13 @@ class InvoiceController extends ApiController
     {
         try {
             $invoice->load(['customer', 'jobCard', 'payments']);
-            
+
             return $this->successResponse(
                 new InvoiceResource($invoice),
                 'Invoice retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve invoice: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve invoice: '.$e->getMessage(), 500);
         }
     }
 
@@ -97,7 +96,7 @@ class InvoiceController extends ApiController
                 'Invoice updated successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update invoice: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update invoice: '.$e->getMessage(), 500);
         }
     }
 
@@ -114,7 +113,7 @@ class InvoiceController extends ApiController
                 'Invoice deleted successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to delete invoice: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete invoice: '.$e->getMessage(), 500);
         }
     }
 
@@ -126,7 +125,7 @@ class InvoiceController extends ApiController
         $prefix = 'INV';
         $year = date('Y');
         $month = date('m');
-        
+
         $lastInvoice = Invoice::where('invoice_number', 'LIKE', "{$prefix}-{$year}{$month}%")
             ->orderBy('invoice_number', 'desc')
             ->first();

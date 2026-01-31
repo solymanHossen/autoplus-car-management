@@ -28,7 +28,7 @@ class StoreVehicleRequest extends FormRequest
             'registration_number' => ['required', 'string', 'max:50'],
             'make' => ['required', 'string', 'max:100'],
             'model' => ['required', 'string', 'max:100'],
-            'year' => ['required', 'integer', 'min:1900', 'max:' . (date('Y') + 1)],
+            'year' => ['required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'color' => ['nullable', 'string', 'max:50'],
             'vin' => ['nullable', 'string', 'max:50', 'unique:vehicles,vin'],
             'engine_number' => ['nullable', 'string', 'max:100'],

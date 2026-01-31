@@ -6,7 +6,6 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
@@ -16,11 +15,6 @@ abstract class ApiController extends Controller
 {
     /**
      * Return a success response.
-     *
-     * @param mixed $data
-     * @param string $message
-     * @param int $code
-     * @return JsonResponse
      */
     protected function successResponse(mixed $data, string $message = 'Operation successful', int $code = 200): JsonResponse
     {
@@ -33,10 +27,6 @@ abstract class ApiController extends Controller
 
     /**
      * Return an error response.
-     *
-     * @param string $message
-     * @param int $code
-     * @return JsonResponse
      */
     protected function errorResponse(string $message, int $code = 400): JsonResponse
     {
@@ -48,11 +38,6 @@ abstract class ApiController extends Controller
 
     /**
      * Return a paginated response.
-     *
-     * @param LengthAwarePaginator $paginator
-     * @param string $resourceClass
-     * @param string|null $message
-     * @return JsonResponse
      */
     protected function paginatedResponse(
         LengthAwarePaginator $paginator,

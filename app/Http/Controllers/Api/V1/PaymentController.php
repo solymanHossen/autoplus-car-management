@@ -7,8 +7,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\StorePaymentRequest;
 use App\Http\Resources\PaymentResource;
-use App\Models\Payment;
 use App\Models\Invoice;
+use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -35,7 +35,7 @@ class PaymentController extends ApiController
                 'Payments retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve payments: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve payments: '.$e->getMessage(), 500);
         }
     }
 
@@ -55,14 +55,14 @@ class PaymentController extends ApiController
             $invoice = Invoice::findOrFail($data['invoice_id']);
             $invoice->paid_amount += $payment->amount;
             $invoice->balance = $invoice->total_amount - $invoice->paid_amount;
-            
+
             // Update invoice status based on payment
             if ($invoice->balance <= 0) {
                 $invoice->status = 'paid';
             } elseif ($invoice->paid_amount > 0) {
                 $invoice->status = 'partially_paid';
             }
-            
+
             $invoice->save();
 
             $payment->load(['invoice', 'receivedBy']);
@@ -73,7 +73,7 @@ class PaymentController extends ApiController
                 201
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to record payment: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to record payment: '.$e->getMessage(), 500);
         }
     }
 
@@ -84,13 +84,13 @@ class PaymentController extends ApiController
     {
         try {
             $payment->load(['invoice', 'receivedBy']);
-            
+
             return $this->successResponse(
                 new PaymentResource($payment),
                 'Payment retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve payment: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to retrieve payment: '.$e->getMessage(), 500);
         }
     }
 
@@ -102,14 +102,14 @@ class PaymentController extends ApiController
         try {
             $oldAmount = $payment->amount;
             $newAmount = $request->validated()['amount'];
-            
+
             $payment->update($request->validated());
 
             // Adjust invoice amounts
             $invoice = $payment->invoice;
             $invoice->paid_amount = $invoice->paid_amount - $oldAmount + $newAmount;
             $invoice->balance = $invoice->total_amount - $invoice->paid_amount;
-            
+
             // Update invoice status
             if ($invoice->balance <= 0) {
                 $invoice->status = 'paid';
@@ -118,7 +118,7 @@ class PaymentController extends ApiController
             } else {
                 $invoice->status = 'sent';
             }
-            
+
             $invoice->save();
 
             return $this->successResponse(
@@ -126,7 +126,7 @@ class PaymentController extends ApiController
                 'Payment updated successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update payment: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to update payment: '.$e->getMessage(), 500);
         }
     }
 
@@ -140,14 +140,14 @@ class PaymentController extends ApiController
             $invoice = $payment->invoice;
             $invoice->paid_amount -= $payment->amount;
             $invoice->balance = $invoice->total_amount - $invoice->paid_amount;
-            
+
             // Update invoice status
             if ($invoice->paid_amount <= 0) {
                 $invoice->status = 'sent';
             } elseif ($invoice->balance > 0) {
                 $invoice->status = 'partially_paid';
             }
-            
+
             $invoice->save();
 
             $payment->delete();
@@ -157,7 +157,7 @@ class PaymentController extends ApiController
                 'Payment deleted successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to delete payment: ' . $e->getMessage(), 500);
+            return $this->errorResponse('Failed to delete payment: '.$e->getMessage(), 500);
         }
     }
 }
