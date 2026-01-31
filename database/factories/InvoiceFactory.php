@@ -41,7 +41,7 @@ class InvoiceFactory extends Factory
 
         return [
             'tenant_id' => Tenant::factory(),
-            'invoice_number' => 'INV-' . date('Y', $invoiceDate->getTimestamp()) . '-' . str_pad((string) self::$invoiceNumberCounter++, 5, '0', STR_PAD_LEFT),
+            'invoice_number' => 'INV-'.date('Y', $invoiceDate->getTimestamp()).'-'.str_pad((string) self::$invoiceNumberCounter++, 5, '0', STR_PAD_LEFT),
             'job_card_id' => fake()->optional(0.7)->passthrough(JobCard::factory()),
             'customer_id' => Customer::factory(),
             'invoice_date' => $invoiceDate,

@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
-use App\Models\{Customer, Tenant, User, Vehicle};
+use App\Models\Customer;
+use App\Models\Tenant;
+use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -120,7 +123,7 @@ class DemoDataSeeder extends Seeder
             Vehicle::create([
                 'tenant_id' => $tenant->id,
                 'customer_id' => $customer->id,
-                'registration_number' => 'ABC-' . rand(1000, 9999),
+                'registration_number' => 'ABC-'.rand(1000, 9999),
                 'make' => $this->getRandomMake(),
                 'model' => 'Model X',
                 'year' => rand(2015, 2023),
@@ -141,12 +144,14 @@ class DemoDataSeeder extends Seeder
     private function getRandomMake(): string
     {
         $makes = ['Toyota', 'Honda', 'Ford', 'BMW', 'Mercedes', 'Audi', 'Volkswagen', 'Nissan'];
+
         return $makes[array_rand($makes)];
     }
 
     private function getRandomColor(): string
     {
         $colors = ['Black', 'White', 'Silver', 'Red', 'Blue', 'Gray', 'Green'];
+
         return $colors[array_rand($colors)];
     }
 }

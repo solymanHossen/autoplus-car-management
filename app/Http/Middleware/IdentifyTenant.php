@@ -47,7 +47,7 @@ class IdentifyTenant
     protected function resolveByDomain(Request $request): ?Tenant
     {
         $host = $request->getHost();
-        
+
         return Tenant::where('domain', $host)
             ->orWhere('subdomain', $host)
             ->first();
@@ -61,7 +61,7 @@ class IdentifyTenant
         $host = $request->getHost();
         $subdomain = explode('.', $host)[0] ?? null;
 
-        if (!$subdomain || in_array($host, config('tenant.central_domains', []))) {
+        if (! $subdomain || in_array($host, config('tenant.central_domains', []))) {
             return null;
         }
 
@@ -75,7 +75,7 @@ class IdentifyTenant
     {
         $tenantId = $request->header('X-Tenant-ID');
 
-        if (!$tenantId) {
+        if (! $tenantId) {
             return null;
         }
 

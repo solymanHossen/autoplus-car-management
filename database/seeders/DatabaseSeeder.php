@@ -28,7 +28,7 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
             'tenant_id' => $tenant->id,
-            'role' => 'owner'
+            'role' => 'owner',
         ]);
     }
 }

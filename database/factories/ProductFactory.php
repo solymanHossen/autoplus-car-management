@@ -47,7 +47,7 @@ class ProductFactory extends Factory
 
         return [
             'tenant_id' => Tenant::factory(),
-            'sku' => strtoupper(substr($type, 0, 3)) . '-' . str_pad((string) self::$skuCounter++, 5, '0', STR_PAD_LEFT),
+            'sku' => strtoupper(substr($type, 0, 3)).'-'.str_pad((string) self::$skuCounter++, 5, '0', STR_PAD_LEFT),
             'name' => $name,
             'name_local' => fake()->optional(0.2)->passthrough(json_encode(['ar' => $name])),
             'type' => $type,

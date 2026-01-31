@@ -33,7 +33,7 @@ class JobCardFactory extends Factory
 
         return [
             'tenant_id' => Tenant::factory(),
-            'job_number' => 'JOB-' . str_pad((string) self::$jobNumberCounter++, 6, '0', STR_PAD_LEFT),
+            'job_number' => 'JOB-'.str_pad((string) self::$jobNumberCounter++, 6, '0', STR_PAD_LEFT),
             'customer_id' => Customer::factory(),
             'vehicle_id' => Vehicle::factory(),
             'assigned_to' => fake()->optional(0.7)->passthrough(User::factory()),

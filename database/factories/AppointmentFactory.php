@@ -39,7 +39,7 @@ class AppointmentFactory extends Factory
         $endTime = sprintf('%02d:00:00', $startHour + fake()->numberBetween(1, 3));
 
         $status = fake()->randomElement(['pending', 'confirmed', 'in_progress', 'completed', 'cancelled']);
-        $confirmedAt = in_array($status, ['confirmed', 'in_progress', 'completed']) 
+        $confirmedAt = in_array($status, ['confirmed', 'in_progress', 'completed'])
             ? fake()->dateTimeBetween('-30 days', 'now')
             : null;
 

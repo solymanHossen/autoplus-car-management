@@ -1,6 +1,5 @@
 <?php
 
-use Closure;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -34,6 +33,7 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($request->is('api/*')) {
                 return true;
             }
+
             return $request->expectsJson();
         });
 
@@ -42,7 +42,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => 'Unauthenticated.',
-                    'error_code' => 'UNAUTHENTICATED'
+                    'error_code' => 'UNAUTHENTICATED',
                 ], 401);
             }
         });
@@ -53,7 +53,7 @@ return Application::configure(basePath: dirname(__DIR__))
                     'success' => false,
                     'message' => 'Validation failed.',
                     'errors' => $e->errors(),
-                    'error_code' => 'VALIDATION_ERROR'
+                    'error_code' => 'VALIDATION_ERROR',
                 ], 422);
             }
         });
@@ -63,7 +63,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 return response()->json([
                     'success' => false,
                     'message' => 'Resource not found.',
-                    'error_code' => 'NOT_FOUND'
+                    'error_code' => 'NOT_FOUND',
                 ], 404);
             }
         });

@@ -2,15 +2,13 @@
 
 declare(strict_types=1);
 
-use App\Http\Controllers\Api\V1\{
-    AppointmentController,
-    AuthController,
-    CustomerController,
-    InvoiceController,
-    JobCardController,
-    PaymentController,
-    VehicleController
-};
+use App\Http\Controllers\Api\V1\AppointmentController;
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CustomerController;
+use App\Http\Controllers\Api\V1\InvoiceController;
+use App\Http\Controllers\Api\V1\JobCardController;
+use App\Http\Controllers\Api\V1\PaymentController;
+use App\Http\Controllers\Api\V1\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -27,15 +25,15 @@ Route::prefix('v1')->group(function () {
         return response()->json([
             'success' => false,
             'message' => 'Unauthenticated.',
-            'error_code' => 'UNAUTHENTICATED'
+            'error_code' => 'UNAUTHENTICATED',
         ], 401);
     })->name('login');
-    
+
     // Authentication Routes (Public)
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login'])->name('api.v1.auth.login');
         Route::post('register', [AuthController::class, 'register'])->name('api.v1.auth.register');
-        
+
         // Protected Auth Routes
         Route::middleware('auth:sanctum')->group(function () {
             Route::post('logout', [AuthController::class, 'logout'])->name('api.v1.auth.logout');
@@ -46,13 +44,13 @@ Route::prefix('v1')->group(function () {
 
     // Protected API Routes
     Route::middleware(['auth:sanctum'])->group(function () {
-        
+
         // Customer Routes
         Route::apiResource('customers', CustomerController::class);
-        
+
         // Vehicle Routes
         Route::apiResource('vehicles', VehicleController::class);
-        
+
         // Job Card Routes
         Route::prefix('job-cards')->name('job-cards.')->group(function () {
             Route::get('/', [JobCardController::class, 'index'])->name('index');
@@ -63,13 +61,13 @@ Route::prefix('v1')->group(function () {
             Route::post('{jobCard}/items', [JobCardController::class, 'addItem'])->name('add-item');
             Route::patch('{jobCard}/status', [JobCardController::class, 'updateStatus'])->name('update-status');
         });
-        
+
         // Invoice Routes
         Route::apiResource('invoices', InvoiceController::class);
-        
+
         // Payment Routes
         Route::apiResource('payments', PaymentController::class);
-        
+
         // Appointment Routes
         Route::prefix('appointments')->name('appointments.')->group(function () {
             Route::get('/', [AppointmentController::class, 'index'])->name('index');
@@ -79,7 +77,7 @@ Route::prefix('v1')->group(function () {
             Route::delete('{appointment}', [AppointmentController::class, 'destroy'])->name('destroy');
             Route::post('{appointment}/confirm', [AppointmentController::class, 'confirm'])->name('confirm');
         });
-        
+
         // Dashboard Stats (placeholder for future implementation)
         Route::get('dashboard/stats', function () {
             return response()->json([
@@ -95,4 +93,3 @@ Route::prefix('v1')->group(function () {
         })->name('dashboard.stats');
     });
 });
-

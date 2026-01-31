@@ -15,7 +15,7 @@ class CheckPermission
      */
     public function handle(Request $request, Closure $next, string $permission): Response
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return response()->json([
                 'success' => false,
                 'message' => 'Unauthenticated.',
@@ -32,7 +32,7 @@ class CheckPermission
         }
 
         // Check if user has the required permission
-        if (!in_array($permission, $userPermissions)) {
+        if (! in_array($permission, $userPermissions)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Forbidden. You do not have permission to perform this action.',
