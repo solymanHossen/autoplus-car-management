@@ -1,0 +1,589 @@
+openapi: 3.0.0
+info:
+  title: AutoPulse API
+  version: v1
+  description: |
+    The AutoPulse API is a RESTful API that enables integration with the AutoPulse Car Management System.
+    This API supports multi-tenant architecture and uses Laravel Sanctum for authentication.
+servers:
+  - url: https://your-domain.com/api/v1
+    description: Production Server
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ValidationError:
+      type: object
+      properties:
+        success:
+          type: boolean
+          example: false
+        message:
+          type: string
+          example: Error message here
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        tenant_id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+        phone:
+          type: string
+        avatar_url:
+          type: string
+          nullable: true
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        address:
+          type: string
+        city:
+          type: string
+        tenant_id:
+          type: string
+    Vehicle:
+      type: object
+      properties:
+        id:
+          type: integer
+        registration_number:
+          type: string
+        make:
+          type: string
+        model:
+          type: string
+        year:
+          type: integer
+        customer_id:
+          type: integer
+    JobCard:
+      type: object
+      properties:
+        id:
+          type: integer
+        job_number:
+          type: string
+        status:
+          type: string
+        priority:
+          type: string
+        customer_id:
+          type: integer
+        vehicle_id:
+          type: integer
+    Invoice:
+      type: object
+      properties:
+        id:
+          type: integer
+        invoice_number:
+          type: string
+        total_amount:
+          type: string
+        status:
+          type: string
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        amount:
+          type: string
+        payment_method:
+          type: string
+    Appointment:
+      type: object
+      properties:
+        id:
+          type: integer
+        appointment_date:
+          type: string
+          format: date-time
+        status:
+          type: string
+
+security:
+  - BearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      summary: Login
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email: { type: string, format: email, example: "user@example.com" }
+                password: { type: string, format: password, example: "password123" }
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: object
+                    properties:
+                      user: { $ref: '#/components/schemas/User' }
+                      token: { type: string }
+                  message: { type: string }
+
+  /auth/register:
+    post:
+      summary: Register User
+      tags: [Auth]
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+                password_confirmation: { type: string }
+                phone: { type: string }
+                role: { type: string }
+      responses:
+        '201':
+          description: Registration successful
+
+  /auth/me:
+    get:
+      summary: Get Current User
+      tags: [Auth]
+      responses:
+        '200':
+          description: User details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { $ref: '#/components/schemas/User' }
+
+  /auth/logout:
+    post:
+      summary: Logout
+      tags: [Auth]
+      responses:
+        '200':
+          description: Logout successful
+
+  /auth/refresh:
+    post:
+      summary: Refresh Token
+      tags: [Auth]
+      responses:
+        '200':
+          description: Token refreshed
+
+  /customers:
+    get:
+      summary: List Customers
+      tags: [Customers]
+      parameters:
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: per_page, in: query, schema: { type: integer } }
+        - { name: search, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items: { $ref: '#/components/schemas/Customer' }
+                  meta: { type: object }
+    post:
+      summary: Create Customer
+      tags: [Customers]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        '201':
+          description: Customer created
+
+  /customers/{id}:
+    get:
+      summary: Get Customer
+      tags: [Customers]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Customer details
+    put:
+      summary: Update Customer
+      tags: [Customers]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Customer'
+      responses:
+        '200':
+          description: Customer updated
+    delete:
+      summary: Delete Customer
+      tags: [Customers]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204':
+          description: Customer deleted
+
+  /vehicles:
+    get:
+      summary: List Vehicles
+      tags: [Vehicles]
+      parameters:
+        - { name: page, in: query, schema: { type: integer } }
+      responses:
+        '200':
+          description: List of vehicles
+    post:
+      summary: Create Vehicle
+      tags: [Vehicles]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+      responses:
+        '201':
+          description: Vehicle created
+
+  /vehicles/{id}:
+    get:
+      summary: Get Vehicle
+      tags: [Vehicles]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Vehicle details
+    put:
+      summary: Update Vehicle
+      tags: [Vehicles]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vehicle'
+      responses:
+        '200':
+          description: Vehicle updated
+    delete:
+      summary: Delete Vehicle
+      tags: [Vehicles]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204':
+          description: Vehicle deleted
+
+  /job-cards:
+    get:
+      summary: List Job Cards
+      tags: [Job Cards]
+      parameters:
+        - { name: page, in: query, schema: { type: integer } }
+        - { name: status, in: query, schema: { type: string } }
+      responses:
+        '200':
+          description: List of job cards
+    post:
+      summary: Create Job Card
+      tags: [Job Cards]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobCard'
+      responses:
+        '201':
+          description: Job card created
+
+  /job-cards/{id}:
+    get:
+      summary: Get Job Card
+      tags: [Job Cards]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Job card details
+    put:
+      summary: Update Job Card
+      tags: [Job Cards]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/JobCard'
+      responses:
+        '200':
+          description: Job card updated
+    delete:
+      summary: Delete Job Card
+      tags: [Job Cards]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204':
+          description: Job card deleted
+
+  /job-cards/{id}/items:
+    post:
+      summary: Add Job Card Item
+      tags: [Job Cards]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string }
+                description: { type: string }
+                quantity: { type: integer }
+                unit_price: { type: string }
+      responses:
+        '201':
+          description: Item added
+
+  /job-cards/{id}/status:
+    patch:
+      summary: Update Job Card Status
+      tags: [Job Cards]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status: { type: string }
+                mileage_out: { type: integer }
+      responses:
+        '200':
+          description: Status updated
+
+  /invoices:
+    get:
+      summary: List Invoices
+      tags: [Invoices]
+      responses:
+        '200':
+          description: List of invoices
+    post:
+      summary: Create Invoice
+      tags: [Invoices]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Invoice'
+      responses:
+        '201':
+          description: Invoice created
+
+  /invoices/{id}:
+    get:
+      summary: Get Invoice
+      tags: [Invoices]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Invoice details
+    put:
+      summary: Update Invoice
+      tags: [Invoices]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Invoice updated
+    delete:
+      summary: Delete Invoice
+      tags: [Invoices]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204':
+          description: Invoice deleted
+
+  /payments:
+    get:
+      summary: List Payments
+      tags: [Payments]
+      responses:
+        '200':
+          description: List of payments
+    post:
+      summary: Create Payment
+      tags: [Payments]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Payment'
+      responses:
+        '201':
+          description: Payment created
+
+  /payments/{id}:
+    get:
+      summary: Get Payment
+      tags: [Payments]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Payment details
+    put:
+      summary: Update Payment
+      tags: [Payments]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Payment updated
+    delete:
+      summary: Delete Payment
+      tags: [Payments]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204':
+          description: Payment deleted
+
+  /appointments:
+    get:
+      summary: List Appointments
+      tags: [Appointments]
+      responses:
+        '200':
+          description: List of appointments
+    post:
+      summary: Create Appointment
+      tags: [Appointments]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Appointment'
+      responses:
+        '201':
+          description: Appointment created
+
+  /appointments/{id}:
+    get:
+      summary: Get Appointment
+      tags: [Appointments]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Appointment details
+    put:
+      summary: Update Appointment
+      tags: [Appointments]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '200':
+          description: Appointment updated
+    delete:
+      summary: Delete Appointment
+      tags: [Appointments]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      responses:
+        '204':
+          description: Appointment deleted
+
+  /appointments/{id}/confirm:
+    post:
+      summary: Confirm Appointment
+      tags: [Appointments]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: integer } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                confirmed_by: { type: integer }
+                notes: { type: string }
+      responses:
+        '200':
+          description: Appointment confirmed
+
+  /dashboard/stats:
+    get:
+      summary: Get Dashboard Stats
+      tags: [Dashboard]
+      responses:
+        '200':
+          description: Dashboard statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data: { type: object }

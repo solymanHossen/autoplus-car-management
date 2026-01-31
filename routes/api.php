@@ -21,6 +21,15 @@ use Illuminate\Support\Facades\Route;
 
 // API V1 Routes
 Route::prefix('v1')->group(function () {
+
+    // Fallback Login Route to prevent "Route [login] not defined" 500 errors
+    Route::get('login', function () {
+        return response()->json([
+            'success' => false,
+            'message' => 'Unauthenticated.',
+            'error_code' => 'UNAUTHENTICATED'
+        ], 401);
+    })->name('login');
     
     // Authentication Routes (Public)
     Route::prefix('auth')->group(function () {

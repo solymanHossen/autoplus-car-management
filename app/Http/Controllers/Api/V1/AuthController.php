@@ -27,9 +27,28 @@ class AuthController extends ApiController
             $data = $request->validated();
 
             // Get tenant_id from the authenticated user or from request
-            // For now, we'll use a default tenant or require it in the request
-            $data['tenant_id'] = $request->input('tenant_id') ?? auth()->user()?->tenant_id ?? '1';
-            $data['role'] = $request->input('role', 'technician');
+            // For now, if no tenant is specified, we'll try to find the first one or create a default one
+            $tenantId = $request->input('tenant_id') ?? auth()->user()?->tenant_id;
+            
+            if (!$tenantId) {
+                // FALLBACK for development: Use the first existing tenant
+                $tenant = \App\Models\Tenant::first();
+                if ($tenant) {
+                    $tenantId = $tenant->id;
+                } else {
+                     // Create a default tenant if one doesn't exist (edge case)
+                    $tenant = \App\Models\Tenant::create([
+                        'id' => \Illuminate\Support\Str::uuid(),
+                        'name' => 'Default Tenant',
+                        'domain' => 'default.local',
+                        'subdomain' => 'default'
+                    ]);
+                    $tenantId = $tenant->id;
+                }
+            }
+            
+            $data['tenant_id'] = $tenantId;
+            $data['role'] = $request->input('role', 'mechanic');
 
             $user = User::create([
                 'tenant_id' => $data['tenant_id'],
