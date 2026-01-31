@@ -15,12 +15,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $job_card_id
  * @property int $vehicle_id
  * @property int $created_by
- * @property string $image_url
- * @property string|null $diagnosis_result
+ * @property string|null $image_url
+ * @property string $diagnosis_text
  * @property string|null $confidence_score
  * @property array|null $visual_markings
  * @property array|null $suggested_services
- * @property string|null $notes
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
@@ -34,11 +33,10 @@ class AiDiagnostic extends Model
         'vehicle_id',
         'created_by',
         'image_url',
-        'diagnosis_result',
+        'diagnosis_text',
         'confidence_score',
         'visual_markings',
         'suggested_services',
-        'notes',
     ];
 
     protected function casts(): array

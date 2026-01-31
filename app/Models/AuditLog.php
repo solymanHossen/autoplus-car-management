@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $event
  * @property string|null $model_type
  * @property int|null $model_id
+ * @property string $action
  * @property array|null $old_values
  * @property array|null $new_values
  * @property string|null $ip_address
@@ -31,9 +32,9 @@ class AuditLog extends Model
     protected $fillable = [
         'tenant_id',
         'user_id',
-        'event',
         'model_type',
         'model_id',
+        'action',
         'old_values',
         'new_values',
         'ip_address',

@@ -12,14 +12,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property string $tenant_id
  * @property int $tenant_subscription_id
- * @property string $invoice_number
  * @property \Illuminate\Support\Carbon $invoice_date
  * @property \Illuminate\Support\Carbon $due_date
  * @property string $amount
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $paid_at
  * @property string|null $payment_method
- * @property string|null $transaction_reference
+ * @property string|null $transaction_id
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
@@ -30,14 +29,13 @@ class SubscriptionInvoice extends Model
     protected $fillable = [
         'tenant_id',
         'tenant_subscription_id',
-        'invoice_number',
         'invoice_date',
         'due_date',
         'amount',
         'status',
         'paid_at',
         'payment_method',
-        'transaction_reference',
+        'transaction_id',
     ];
 
     protected function casts(): array

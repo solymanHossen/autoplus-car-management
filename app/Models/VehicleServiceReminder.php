@@ -14,9 +14,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $tenant_id
  * @property int $vehicle_id
  * @property string $reminder_type
- * @property string $description
  * @property int|null $due_mileage
  * @property \Illuminate\Support\Carbon|null $due_date
+ * @property string $service_description
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $sent_at
  * @property \Illuminate\Support\Carbon|null $completed_at
@@ -31,9 +31,9 @@ class VehicleServiceReminder extends Model
         'tenant_id',
         'vehicle_id',
         'reminder_type',
-        'description',
         'due_mileage',
         'due_date',
+        'service_description',
         'status',
         'sent_at',
         'completed_at',

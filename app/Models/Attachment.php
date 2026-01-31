@@ -19,7 +19,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string $file_path
  * @property string $file_type
  * @property int $file_size
- * @property int|null $uploaded_by
+ * @property string $mime_type
+ * @property int $uploaded_by
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
@@ -35,6 +36,7 @@ class Attachment extends Model
         'file_path',
         'file_type',
         'file_size',
+        'mime_type',
         'uploaded_by',
     ];
 

@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $vehicle_id
  * @property \Illuminate\Support\Carbon $appointment_date
  * @property \Illuminate\Support\Carbon $start_time
- * @property \Illuminate\Support\Carbon|null $end_time
+ * @property \Illuminate\Support\Carbon $end_time
  * @property string $service_type
  * @property string|null $notes
  * @property string $status
@@ -47,8 +47,8 @@ class Appointment extends Model
     {
         return [
             'appointment_date' => 'date',
-            'start_time' => 'datetime',
-            'end_time' => 'datetime',
+            'start_time' => 'datetime:H:i:s',
+            'end_time' => 'datetime:H:i:s',
             'confirmed_at' => 'datetime',
         ];
     }

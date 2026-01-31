@@ -13,12 +13,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $job_card_id
  * @property int $product_id
  * @property string $item_type
- * @property string|null $description
  * @property string $quantity
  * @property string $unit_price
  * @property string|null $tax_rate
  * @property string|null $discount
  * @property string $total
+ * @property string|null $notes
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
@@ -30,12 +30,12 @@ class JobCardItem extends Model
         'job_card_id',
         'product_id',
         'item_type',
-        'description',
         'quantity',
         'unit_price',
         'tax_rate',
         'discount',
         'total',
+        'notes',
     ];
 
     protected function casts(): array

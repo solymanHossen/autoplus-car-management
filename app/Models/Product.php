@@ -22,10 +22,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $type
  * @property string|null $category
  * @property string $unit_price
- * @property string|null $cost_price
+ * @property string $cost_price
  * @property int $stock_quantity
- * @property int|null $min_stock_level
- * @property string|null $location
+ * @property int $min_stock_level
+ * @property int|null $supplier_id
+ * @property string|null $description
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -40,14 +41,13 @@ class Product extends Model
         'sku',
         'name',
         'name_local',
-        'description',
         'type',
         'category',
         'unit_price',
         'cost_price',
         'stock_quantity',
         'min_stock_level',
-        'location',
+        'description',
     ];
 
     protected function casts(): array

@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * @property int $id
  * @property string $tenant_id
- * @property string $job_card_number
+ * @property string $job_number
  * @property int $customer_id
  * @property int $vehicle_id
  * @property int|null $assigned_to
@@ -24,10 +24,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string $priority
  * @property int|null $mileage_in
  * @property int|null $mileage_out
- * @property string|null $customer_complaints
- * @property string|null $inspection_notes
- * @property string|null $work_performed
- * @property string|null $recommendations
+ * @property string|null $customer_notes
+ * @property string|null $internal_notes
+ * @property string|null $diagnosis_notes
  * @property \Illuminate\Support\Carbon|null $estimated_completion
  * @property \Illuminate\Support\Carbon|null $actual_completion
  * @property string $subtotal
@@ -47,7 +46,7 @@ class JobCard extends Model
 
     protected $fillable = [
         'tenant_id',
-        'job_card_number',
+        'job_number',
         'customer_id',
         'vehicle_id',
         'assigned_to',
@@ -55,10 +54,9 @@ class JobCard extends Model
         'priority',
         'mileage_in',
         'mileage_out',
-        'customer_complaints',
-        'inspection_notes',
-        'work_performed',
-        'recommendations',
+        'customer_notes',
+        'internal_notes',
+        'diagnosis_notes',
         'estimated_completion',
         'actual_completion',
         'subtotal',

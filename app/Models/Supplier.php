@@ -20,8 +20,6 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $phone
  * @property string|null $address
  * @property string|null $city
- * @property string|null $state
- * @property string|null $postal_code
  * @property string|null $country
  * @property string|null $notes
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -40,8 +38,6 @@ class Supplier extends Model
         'phone',
         'address',
         'city',
-        'state',
-        'postal_code',
         'country',
         'notes',
     ];

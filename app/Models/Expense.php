@@ -15,16 +15,15 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $id
  * @property string $tenant_id
  * @property int|null $supplier_id
- * @property string $expense_category
+ * @property string $category
  * @property \Illuminate\Support\Carbon $expense_date
  * @property string $amount
  * @property string $payment_method
- * @property string|null $reference_number
- * @property string|null $description
+ * @property string $description
+ * @property string|null $receipt_url
  * @property int $created_by
  * @property int|null $approved_by
  * @property \Illuminate\Support\Carbon|null $approved_at
- * @property string $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
@@ -36,16 +35,15 @@ class Expense extends Model
     protected $fillable = [
         'tenant_id',
         'supplier_id',
-        'expense_category',
+        'category',
         'expense_date',
         'amount',
         'payment_method',
-        'reference_number',
         'description',
+        'receipt_url',
         'created_by',
         'approved_by',
         'approved_at',
-        'status',
     ];
 
     protected function casts(): array

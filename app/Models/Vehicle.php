@@ -16,13 +16,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property int $id
  * @property string $tenant_id
  * @property int $customer_id
+ * @property string $registration_number
  * @property string $make
  * @property string $model
- * @property string|null $year
+ * @property int $year
  * @property string|null $color
- * @property string $license_plate
  * @property string|null $vin
- * @property int|null $current_mileage
+ * @property string|null $engine_number
+ * @property int $current_mileage
  * @property \Illuminate\Support\Carbon|null $last_service_date
  * @property \Illuminate\Support\Carbon|null $next_service_date
  * @property \Illuminate\Support\Carbon|null $purchase_date
@@ -38,12 +39,13 @@ class Vehicle extends Model
     protected $fillable = [
         'tenant_id',
         'customer_id',
+        'registration_number',
         'make',
         'model',
         'year',
         'color',
-        'license_plate',
         'vin',
+        'engine_number',
         'current_mileage',
         'last_service_date',
         'next_service_date',

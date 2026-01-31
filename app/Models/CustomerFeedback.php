@@ -15,13 +15,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $customer_id
  * @property int|null $job_card_id
  * @property int $rating
+ * @property string|null $review_text
  * @property int|null $service_quality_rating
  * @property int|null $staff_rating
  * @property int|null $facility_rating
- * @property string|null $comments
  * @property bool $is_public
- * @property string|null $response
  * @property \Illuminate\Support\Carbon|null $responded_at
+ * @property string|null $response_text
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
@@ -34,13 +34,13 @@ class CustomerFeedback extends Model
         'customer_id',
         'job_card_id',
         'rating',
+        'review_text',
         'service_quality_rating',
         'staff_rating',
         'facility_rating',
-        'comments',
         'is_public',
-        'response',
         'responded_at',
+        'response_text',
     ];
 
     protected function casts(): array

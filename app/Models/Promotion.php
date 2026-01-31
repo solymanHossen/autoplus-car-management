@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /**
  * @property int $id
  * @property string $tenant_id
+ * @property string $code
  * @property string $name
  * @property string|null $description
  * @property string $discount_type
@@ -30,6 +31,7 @@ class Promotion extends Model
 
     protected $fillable = [
         'tenant_id',
+        'code',
         'name',
         'description',
         'discount_type',

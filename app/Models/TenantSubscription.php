@@ -13,12 +13,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $id
  * @property string $tenant_id
  * @property int $package_id
- * @property string $billing_cycle
+ * @property string $status
  * @property \Illuminate\Support\Carbon $started_at
  * @property \Illuminate\Support\Carbon|null $ends_at
  * @property \Illuminate\Support\Carbon|null $trial_ends_at
  * @property \Illuminate\Support\Carbon|null $cancelled_at
- * @property string $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
@@ -29,12 +28,11 @@ class TenantSubscription extends Model
     protected $fillable = [
         'tenant_id',
         'package_id',
-        'billing_cycle',
+        'status',
         'started_at',
         'ends_at',
         'trial_ends_at',
         'cancelled_at',
-        'status',
     ];
 
     protected function casts(): array

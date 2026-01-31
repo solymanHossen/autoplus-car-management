@@ -13,8 +13,9 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 /**
  * @property int $id
  * @property string $tenant_id
+ * @property string $name
  * @property string $url
- * @property string $event
+ * @property string $event_type
  * @property string|null $secret
  * @property bool $is_active
  * @property \Illuminate\Support\Carbon|null $created_at
@@ -26,8 +27,9 @@ class Webhook extends Model
 
     protected $fillable = [
         'tenant_id',
+        'name',
         'url',
-        'event',
+        'event_type',
         'secret',
         'is_active',
     ];

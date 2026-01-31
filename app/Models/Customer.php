@@ -18,12 +18,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property array|null $name_local
  * @property string|null $email
  * @property string $phone
+ * @property string|null $phone_alt
  * @property string|null $address
  * @property string|null $city
- * @property string|null $state
  * @property string|null $postal_code
- * @property string|null $country
- * @property string|null $preferred_language
+ * @property string|null $national_id
+ * @property string|null $company_name
+ * @property string $preferred_language
  * @property string|null $notes
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
@@ -39,11 +40,12 @@ class Customer extends Model
         'name_local',
         'email',
         'phone',
+        'phone_alt',
         'address',
         'city',
-        'state',
         'postal_code',
-        'country',
+        'national_id',
+        'company_name',
         'preferred_language',
         'notes',
     ];
