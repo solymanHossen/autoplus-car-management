@@ -36,6 +36,7 @@ test('a user can register', function () {
 });
 
 test('a user can login', function () {
+    config(['tenant.identification_method' => 'header']);
     $tenant = Tenant::factory()->create();
     $user = User::factory()->create([
         'tenant_id' => $tenant->id,
@@ -46,6 +47,8 @@ test('a user can login', function () {
     $response = $this->postJson(route('api.v1.auth.login'), [
         'email' => 'jane@example.com',
         'password' => 'secret123',
+    ], [
+        'X-Tenant-ID' => $tenant->id
     ]);
 
     $response->assertOk();
@@ -76,13 +79,16 @@ test('unauthenticated user cannot view profile', function () {
 });
 
 test('user can logout', function () {
+    config(['tenant.identification_method' => 'header']);
     $tenant = Tenant::factory()->create();
     $user = User::factory()->create(['tenant_id' => $tenant->id]);
 
     $token = $user->createToken('test')->plainTextToken;
 
     $response = $this->withHeader('Authorization', 'Bearer ' . $token)
-        ->postJson(route('api.v1.auth.logout'));
+        ->postJson(route('api.v1.auth.logout'), [], [
+            'X-Tenant-ID' => $tenant->id
+        ]);
 
     $response->assertOk();
     $response->assertJsonFragment(['message' => 'Logged out successfully']);

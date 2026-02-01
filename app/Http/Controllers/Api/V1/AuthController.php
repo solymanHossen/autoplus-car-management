@@ -63,11 +63,15 @@ class AuthController extends ApiController
     {
         $credentials = $request->validated();
 
-        if (! Auth::attempt($credentials)) {
+        $user = User::where('email', $credentials['email'])->first();
+
+        if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             return $this->errorResponse('Invalid credentials', 401);
         }
 
-        $user = Auth::user();
+        // Manually log in the user if needed by other logic, but usually for API we just issue token
+        // Auth::login($user); 
+
         $token = $this->createToken($user);
 
         return $this->successResponse([
