@@ -31,7 +31,7 @@ class StoreAppointmentRequest extends FormRequest
             'end_time' => ['required', 'date_format:H:i:s', 'after:start_time'],
             'service_type' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
-            'status' => ['required', 'string', 'in:scheduled,confirmed,in_progress,completed,cancelled,no_show'],
+            'status' => ['required', 'string', 'in:pending,scheduled,confirmed,in_progress,completed,cancelled,no_show'],
         ];
     }
 

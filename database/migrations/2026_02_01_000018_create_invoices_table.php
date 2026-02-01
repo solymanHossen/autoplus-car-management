@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('customer_id')->constrained()->cascadeOnDelete();
             $table->date('invoice_date');
             $table->date('due_date');
-            $table->enum('status', ['draft', 'sent', 'paid', 'overdue', 'cancelled'])->default('draft');
+            $table->enum('status', ['draft', 'sent', 'paid', 'partially_paid', 'overdue', 'cancelled'])->default('draft');
             $table->decimal('subtotal', 10, 2);
             $table->decimal('tax_amount', 10, 2);
             $table->decimal('discount_amount', 10, 2);
