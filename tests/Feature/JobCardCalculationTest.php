@@ -12,12 +12,12 @@ test('job card totals are calculated correctly when adding items', function () {
     $tenant = Tenant::factory()->create();
     $user = User::factory()->create(['tenant_id' => $tenant->id]);
     
-    // Create Job Card
+    // Create Job Card with explicit zero values to prevent factory randomness
     $jobCard = JobCard::factory()->create([
         'tenant_id' => $tenant->id,
         'subtotal' => 0,
         'tax_amount' => 0,
-        'discount_amount' => 0, // Ensure no random discount from factory
+        'discount_amount' => 0,
         'total_amount' => 0,
     ]);
 
@@ -30,7 +30,7 @@ test('job card totals are calculated correctly when adding items', function () {
     $response = $this->postJson(route('job-cards.add-item', $jobCard), [
         'item_type' => 'part',
         'quantity' => 2,
-        'unit_price' => 100,
+        'unit_price' => 100, // Integer input
         'tax_rate' => 10,
         'discount' => 0,
         'notes' => 'Test Part',
@@ -38,16 +38,18 @@ test('job card totals are calculated correctly when adding items', function () {
 
     $response->assertCreated();
     
-    // Verify Item 1 Response
+    // Verify Item 1 Response Structure and Values
     $response->assertJsonFragment([
         'total' => '220.00',
     ]);
 
     // Verify Job Card Totals after Item 1
     $jobCard->refresh();
-    expect($jobCard->subtotal)->toEqual('200.00')
-        ->and($jobCard->tax_amount)->toEqual('20.00')
-        ->and($jobCard->total_amount)->toEqual('220.00');
+    
+    // Use assertEquals for strict type checking if needed, or stick to explicit string comparison for JSON APIs
+    expect($jobCard->subtotal)->toBe('200.00')
+        ->and($jobCard->tax_amount)->toBe('20.00')
+        ->and($jobCard->total_amount)->toBe('220.00');
 
 
     // 2. Add Second Item: Service $50, Qty 1, Tax 0%
@@ -57,7 +59,7 @@ test('job card totals are calculated correctly when adding items', function () {
     $response2 = $this->postJson(route('job-cards.add-item', $jobCard), [
         'item_type' => 'service',
         'quantity' => 1,
-        'unit_price' => 50,
+        'unit_price' => 50.00, // Float input
         'tax_rate' => 0,
         'discount' => 0,
         'notes' => 'Labor',
@@ -70,9 +72,9 @@ test('job card totals are calculated correctly when adding items', function () {
     // Cumulative Tax: 20 + 0 = 20
     // Cumulative Total: 220 + 50 = 270
     $jobCard->refresh();
-    expect($jobCard->subtotal)->toEqual('250.00')
-        ->and($jobCard->tax_amount)->toEqual('20.00')
-        ->and($jobCard->total_amount)->toEqual('270.00');
+    expect($jobCard->subtotal)->toBe('250.00')
+        ->and($jobCard->tax_amount)->toBe('20.00')
+        ->and($jobCard->total_amount)->toBe('270.00');
 });
 
 test('job card discount is applied to global total', function () {
