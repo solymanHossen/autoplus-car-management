@@ -68,3 +68,30 @@ test('a user only sees job cards from their own tenant in index', function () {
     // Assert we see 3 items (from Tenant A) and not the one from Tenant B
     $response->assertJsonCount(3, 'data');
 });
+
+test('a user cannot update a job card from another tenant', function () {
+    // Create two tenants
+    $tenantA = Tenant::factory()->create();
+    $tenantB = Tenant::factory()->create();
+
+    // Create a user for Tenant A
+    $userA = User::factory()->create([
+        'tenant_id' => $tenantA->id,
+    ]);
+
+    // Create a JobCard for Tenant B
+    $jobCardB = JobCard::factory()->create([
+        'tenant_id' => $tenantB->id,
+    ]);
+
+    // Authenticate as User A (Tenant A)
+    $this->actingAs($userA);
+
+    // Attempt to update JobCard B via API
+    $response = $this->putJson(route('job-cards.update', $jobCardB), [
+        'status' => 'working',
+    ]);
+
+    // Assert 404 Not Found (Standard for Model Not Found or Scoped queries)
+    $response->assertNotFound();
+});

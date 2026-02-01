@@ -13,36 +13,26 @@ class JobCardService
      */
     public function recalculateTotals(JobCard $jobCard): JobCard
     {
-        $items = $jobCard->jobCardItems()->get(); // Load once to avoid N+1 in loops if calling generic getters
+        $items = $jobCard->jobCardItems()->get(); 
 
-        // Calculate subtotal (without tax)
-        $subtotal = $items->sum(function ($item) {
-            return $item->quantity * $item->unit_price;
-        });
+        $subtotal = 0;
+        $taxAmount = 0;
+        $itemsTotal = 0;
 
-        // Calculate total tax amount
-        $taxAmount = $items->sum(function ($item) {
-            $itemSubtotal = $item->quantity * $item->unit_price;
-            return $item->tax_rate ? ($itemSubtotal * $item->tax_rate / 100) : 0;
-        });
+        foreach ($items as $item) {
+            $lineSubtotal = $item->quantity * $item->unit_price;
+            $lineTax = $item->tax_rate ? ($lineSubtotal * $item->tax_rate / 100) : 0;
+            $lineDiscount = $item->discount ?? 0;
+            
+            $lineTotal = $lineSubtotal + $lineTax - $lineDiscount;
 
-        // Sum Item Totals (this logic in controller was: sum('total'))
-        // Let's verify compatibility. item->total in DB might differ if not updated correctly.
-        // It's safer to recalculate everything from raw input or trust the stored item->total.
-        // Controller trusted stored item->total. Let's recalculate for safety/consistency.
-        // Item total = sub + tax - discount
-        
-        $itemsTotal = $items->sum(function ($item) {
-             // If item has a 'total' property that is reliable:
-             return $item->total;
-        });
-        
-        // However, the controller logic:
-        // $total = $jobCard->jobCardItems()->sum('total');
-        // Let's mimic that but more efficiently.
-        $totalFromItems = $items->sum('total');
+            $subtotal += $lineSubtotal;
+            $taxAmount += $lineTax;
+            $itemsTotal += $lineTotal;
+        }
 
-        $finalTotal = $totalFromItems - ($jobCard->discount_amount ?? 0);
+        // JobCard level discount
+        $finalTotal = $itemsTotal - ($jobCard->discount_amount ?? 0);
 
         $jobCard->update([
             'subtotal' => $subtotal,
