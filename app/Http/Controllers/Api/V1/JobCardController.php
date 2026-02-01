@@ -164,15 +164,15 @@ class JobCardController extends ApiController
     {
         try {
             $validated = $request->validate([
-                'status' => ['required', 'string', 'in:pending,in_progress,completed,on_hold,cancelled'],
+                'status' => ['required', 'string', 'in:pending,diagnosis,approval,working,qc,ready,delivered,on_hold,cancelled'],
             ]);
 
             $jobCard->update(['status' => $validated['status']]);
 
             // Set timestamps based on status
-            if ($validated['status'] === 'in_progress' && ! $jobCard->started_at) {
+            if ($validated['status'] === 'working' && ! $jobCard->started_at) {
                 $jobCard->update(['started_at' => now()]);
-            } elseif ($validated['status'] === 'completed' && ! $jobCard->completed_at) {
+            } elseif ($validated['status'] === 'ready' && ! $jobCard->completed_at) {
                 $jobCard->update(['completed_at' => now()]);
             }
 
