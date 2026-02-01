@@ -9,6 +9,7 @@ use App\Http\Requests\StoreJobCardRequest;
 use App\Http\Requests\UpdateJobCardRequest;
 use App\Http\Resources\JobCardResource;
 use App\Models\JobCard;
+use App\Services\JobCardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Spatie\QueryBuilder\QueryBuilder;
@@ -18,6 +19,10 @@ use Spatie\QueryBuilder\QueryBuilder;
  */
 class JobCardController extends ApiController
 {
+    public function __construct(
+        protected JobCardService $jobCardService
+    ) {}
+
     /**
      * Display a listing of job cards.
      */
@@ -145,7 +150,7 @@ class JobCardController extends ApiController
             $item = $jobCard->jobCardItems()->create($validated);
 
             // Recalculate job card totals
-            $this->recalculateJobCardTotals($jobCard);
+            $this->jobCardService->recalculateTotals($jobCard);
 
             return $this->successResponse(
                 $item,
@@ -164,15 +169,15 @@ class JobCardController extends ApiController
     {
         try {
             $validated = $request->validate([
-                'status' => ['required', 'string', 'in:pending,in_progress,completed,on_hold,cancelled'],
+                'status' => ['required', 'string', 'in:pending,diagnosis,approval,working,qc,ready,delivered,on_hold,cancelled'],
             ]);
 
             $jobCard->update(['status' => $validated['status']]);
 
             // Set timestamps based on status
-            if ($validated['status'] === 'in_progress' && ! $jobCard->started_at) {
+            if ($validated['status'] === 'working' && ! $jobCard->started_at) {
                 $jobCard->update(['started_at' => now()]);
-            } elseif ($validated['status'] === 'completed' && ! $jobCard->completed_at) {
+            } elseif ($validated['status'] === 'ready' && ! $jobCard->completed_at) {
                 $jobCard->update(['completed_at' => now()]);
             }
 
@@ -206,38 +211,5 @@ class JobCardController extends ApiController
         }
 
         return "{$prefix}-{$year}{$month}{$newNumber}";
-    }
-
-    /**
-     * Recalculate job card totals.
-     */
-    private function recalculateJobCardTotals(JobCard $jobCard): void
-    {
-        // Sum all item totals (which already include tax calculations)
-        $total = $jobCard->jobCardItems()->sum('total');
-
-        // Calculate subtotal (without tax)
-        $subtotal = $jobCard->jobCardItems()
-            ->get()
-            ->sum(function ($item) {
-                return $item->quantity * $item->unit_price;
-            });
-
-        // Calculate total tax amount
-        $taxAmount = $jobCard->jobCardItems()
-            ->get()
-            ->sum(function ($item) {
-                $subtotal = $item->quantity * $item->unit_price;
-
-                return $item->tax_rate ? ($subtotal * $item->tax_rate / 100) : 0;
-            });
-
-        $totalAmount = $total - ($jobCard->discount_amount ?? 0);
-
-        $jobCard->update([
-            'subtotal' => $subtotal,
-            'tax_amount' => $taxAmount,
-            'total_amount' => max(0, $totalAmount),
-        ]);
     }
 }

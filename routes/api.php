@@ -31,7 +31,7 @@ Route::prefix('v1')->group(function () {
 
     // Authentication Routes (Public)
     Route::prefix('auth')->group(function () {
-        Route::post('login', [AuthController::class, 'login'])->name('api.v1.auth.login');
+        Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('api.v1.auth.login');
         Route::post('register', [AuthController::class, 'register'])->name('api.v1.auth.register');
 
         // Protected Auth Routes
@@ -43,7 +43,7 @@ Route::prefix('v1')->group(function () {
     });
 
     // Protected API Routes
-    Route::middleware(['auth:sanctum'])->group(function () {
+    Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
 
         // Customer Routes
         Route::apiResource('customers', CustomerController::class);

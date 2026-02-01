@@ -13,8 +13,8 @@ return new class extends Migration
         Schema::create('job_card_items', function (Blueprint $table) {
             $table->id();
             $table->foreignId('job_card_id')->constrained()->cascadeOnDelete();
-            $table->foreignId('product_id')->constrained()->cascadeOnDelete();
-            $table->enum('item_type', ['part', 'labor']);
+            $table->foreignId('product_id')->nullable()->constrained()->cascadeOnDelete();
+            $table->enum('item_type', ['part', 'service']);
             $table->decimal('quantity', 8, 2);
             $table->decimal('unit_price', 10, 2);
             $table->decimal('tax_rate', 5, 2)->default(0);
