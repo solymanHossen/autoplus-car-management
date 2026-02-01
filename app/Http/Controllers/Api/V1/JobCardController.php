@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Http\Requests\StoreJobCardItemRequest;
 use App\Http\Requests\StoreJobCardRequest;
 use App\Http\Requests\UpdateJobCardRequest;
 use App\Http\Resources\JobCardResource;
@@ -28,21 +29,17 @@ class JobCardController extends ApiController
      */
     public function index(): JsonResponse
     {
-        try {
-            $jobCards = QueryBuilder::for(JobCard::class)
-                ->allowedFilters(['status', 'priority', 'customer_id', 'vehicle_id', 'assigned_to'])
-                ->allowedSorts(['job_number', 'status', 'priority', 'created_at', 'estimated_completion'])
-                ->allowedIncludes(['customer', 'vehicle', 'assignedTo', 'jobCardItems'])
-                ->paginate(15);
+        $jobCards = QueryBuilder::for(JobCard::class)
+            ->allowedFilters(['status', 'priority', 'customer_id', 'vehicle_id', 'assigned_to'])
+            ->allowedSorts(['job_number', 'status', 'priority', 'created_at', 'estimated_completion'])
+            ->allowedIncludes(['customer', 'vehicle', 'assignedTo', 'jobCardItems'])
+            ->paginate(15);
 
-            return $this->paginatedResponse(
-                $jobCards,
-                JobCardResource::class,
-                'Job cards retrieved successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve job cards: '.$e->getMessage(), 500);
-        }
+        return $this->paginatedResponse(
+            $jobCards,
+            JobCardResource::class,
+            'Job cards retrieved successfully'
+        );
     }
 
     /**
@@ -50,28 +47,24 @@ class JobCardController extends ApiController
      */
     public function store(StoreJobCardRequest $request): JsonResponse
     {
-        try {
-            $data = $request->validated();
-            $data['tenant_id'] = auth()->user()->tenant_id;
-            $data['job_number'] = $this->generateJobNumber();
+        $data = $request->validated();
+        $data['tenant_id'] = auth()->user()->tenant_id;
+        $data['job_number'] = $this->generateJobNumber();
 
-            // Initialize amounts to zero
-            $data['subtotal'] = $data['subtotal'] ?? 0;
-            $data['tax_amount'] = $data['tax_amount'] ?? 0;
-            $data['discount_amount'] = $data['discount_amount'] ?? 0;
-            $data['total_amount'] = $data['total_amount'] ?? 0;
+        // Initialize amounts to zero
+        $data['subtotal'] = $data['subtotal'] ?? 0;
+        $data['tax_amount'] = $data['tax_amount'] ?? 0;
+        $data['discount_amount'] = $data['discount_amount'] ?? 0;
+        $data['total_amount'] = $data['total_amount'] ?? 0;
 
-            $jobCard = JobCard::create($data);
-            $jobCard->load(['customer', 'vehicle', 'assignedTo']);
+        $jobCard = JobCard::create($data);
+        $jobCard->load(['customer', 'vehicle', 'assignedTo']);
 
-            return $this->successResponse(
-                new JobCardResource($jobCard),
-                'Job card created successfully',
-                201
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create job card: '.$e->getMessage(), 500);
-        }
+        return $this->successResponse(
+            new JobCardResource($jobCard),
+            'Job card created successfully',
+            201
+        );
     }
 
     /**
@@ -79,16 +72,12 @@ class JobCardController extends ApiController
      */
     public function show(JobCard $jobCard): JsonResponse
     {
-        try {
-            $jobCard->load(['customer', 'vehicle', 'assignedTo', 'jobCardItems']);
+        $jobCard->load(['customer', 'vehicle', 'assignedTo', 'jobCardItems']);
 
-            return $this->successResponse(
-                new JobCardResource($jobCard),
-                'Job card retrieved successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve job card: '.$e->getMessage(), 500);
-        }
+        return $this->successResponse(
+            new JobCardResource($jobCard),
+            'Job card retrieved successfully'
+        );
     }
 
     /**
@@ -96,16 +85,12 @@ class JobCardController extends ApiController
      */
     public function update(UpdateJobCardRequest $request, JobCard $jobCard): JsonResponse
     {
-        try {
-            $jobCard->update($request->validated());
+        $jobCard->update($request->validated());
 
-            return $this->successResponse(
-                new JobCardResource($jobCard->fresh()->load(['customer', 'vehicle', 'assignedTo'])),
-                'Job card updated successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update job card: '.$e->getMessage(), 500);
-        }
+        return $this->successResponse(
+            new JobCardResource($jobCard->fresh()->load(['customer', 'vehicle', 'assignedTo'])),
+            'Job card updated successfully'
+        );
     }
 
     /**
@@ -113,53 +98,37 @@ class JobCardController extends ApiController
      */
     public function destroy(JobCard $jobCard): JsonResponse
     {
-        try {
-            $jobCard->delete();
+        $jobCard->delete();
 
-            return $this->successResponse(
-                null,
-                'Job card deleted successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to delete job card: '.$e->getMessage(), 500);
-        }
+        return $this->successResponse(
+            null,
+            'Job card deleted successfully'
+        );
     }
 
     /**
      * Add an item to the job card.
      */
-    public function addItem(Request $request, JobCard $jobCard): JsonResponse
+    public function addItem(StoreJobCardItemRequest $request, JobCard $jobCard): JsonResponse
     {
-        try {
-            $validated = $request->validate([
-                'product_id' => ['nullable', 'integer', 'exists:products,id'],
-                'item_type' => ['required', 'string', 'in:service,part'],
-                'quantity' => ['required', 'numeric', 'min:0.01'],
-                'unit_price' => ['required', 'numeric', 'min:0'],
-                'tax_rate' => ['nullable', 'numeric', 'min:0', 'max:100'],
-                'discount' => ['nullable', 'numeric', 'min:0'],
-                'notes' => ['nullable', 'string'],
-            ]);
+        $validated = $request->validated();
 
-            // Calculate total
-            $subtotal = $validated['quantity'] * $validated['unit_price'];
-            $taxAmount = isset($validated['tax_rate']) ? ($subtotal * $validated['tax_rate'] / 100) : 0;
-            $discount = $validated['discount'] ?? 0;
-            $validated['total'] = $subtotal + $taxAmount - $discount;
+        // Calculate total
+        $subtotal = $validated['quantity'] * $validated['unit_price'];
+        $taxAmount = isset($validated['tax_rate']) ? ($subtotal * $validated['tax_rate'] / 100) : 0;
+        $discount = $validated['discount'] ?? 0;
+        $validated['total'] = $subtotal + $taxAmount - $discount;
 
-            $item = $jobCard->jobCardItems()->create($validated);
+        $item = $jobCard->jobCardItems()->create($validated);
 
-            // Recalculate job card totals
-            $this->jobCardService->recalculateTotals($jobCard);
+        // Recalculate job card totals
+        $this->jobCardService->recalculateTotals($jobCard);
 
-            return $this->successResponse(
-                $item,
-                'Item added to job card successfully',
-                201
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to add item: '.$e->getMessage(), 500);
-        }
+        return $this->successResponse(
+            $item,
+            'Item added to job card successfully',
+            201
+        );
     }
 
     /**
@@ -167,27 +136,23 @@ class JobCardController extends ApiController
      */
     public function updateStatus(Request $request, JobCard $jobCard): JsonResponse
     {
-        try {
-            $validated = $request->validate([
-                'status' => ['required', 'string', 'in:pending,diagnosis,approval,working,qc,ready,delivered,on_hold,cancelled'],
-            ]);
+        $validated = $request->validate([
+            'status' => ['required', 'string', 'in:pending,diagnosis,approval,working,qc,ready,delivered,on_hold,cancelled'],
+        ]);
 
-            $jobCard->update(['status' => $validated['status']]);
+        $jobCard->update(['status' => $validated['status']]);
 
-            // Set timestamps based on status
-            if ($validated['status'] === 'working' && ! $jobCard->started_at) {
-                $jobCard->update(['started_at' => now()]);
-            } elseif ($validated['status'] === 'ready' && ! $jobCard->completed_at) {
-                $jobCard->update(['completed_at' => now()]);
-            }
-
-            return $this->successResponse(
-                new JobCardResource($jobCard->fresh()),
-                'Job card status updated successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update status: '.$e->getMessage(), 500);
+        // Set timestamps based on status
+        if ($validated['status'] === 'working' && ! $jobCard->started_at) {
+            $jobCard->update(['started_at' => now()]);
+        } elseif ($validated['status'] === 'ready' && ! $jobCard->completed_at) {
+            $jobCard->update(['completed_at' => now()]);
         }
+
+        return $this->successResponse(
+            new JobCardResource($jobCard->fresh()),
+            'Job card status updated successfully'
+        );
     }
 
     /**
