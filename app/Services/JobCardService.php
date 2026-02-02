@@ -22,17 +22,21 @@ class JobCardService
             $itemsTotal = 0.0;
 
             foreach ($items as $item) {
-                // Ensure floating point precision usage or use bcmath if requested (using round for currency standard)
-                $lineSubtotal = (float) $item->quantity * (float) $item->unit_price;
+                // Ensure floating point type casting
+                $quantity = (float) $item->quantity;
+                $unitPrice = (float) $item->unit_price;
+                
+                $lineSubtotal = $quantity * $unitPrice;
                 
                 $lineTax = 0.0;
-                if ($item->tax_rate) {
+                // Handle potential division by zero or null tax_rate
+                if ($item->tax_rate !== null && $item->tax_rate != 0) {
                     $lineTax = round($lineSubtotal * ($item->tax_rate / 100), 2);
                 }
 
-                $lineDiscount = (float) ($item->discount ?? 0);
+                $discount = (float) ($item->discount ?? 0);
                 
-                $lineTotal = round($lineSubtotal + $lineTax - $lineDiscount, 2);
+                $lineTotal = round($lineSubtotal + $lineTax - $discount, 2);
 
                 $subtotal += $lineSubtotal;
                 $taxAmount += $lineTax;
@@ -40,7 +44,8 @@ class JobCardService
             }
 
             // JobCard level discount
-            $finalTotal = round($itemsTotal - ($jobCard->discount_amount ?? 0), 2);
+            $jobCardDiscount = (float) ($jobCard->discount_amount ?? 0);
+            $finalTotal = round($itemsTotal - $jobCardDiscount, 2);
 
             $jobCard->update([
                 'subtotal' => round($subtotal, 2),

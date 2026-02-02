@@ -7,7 +7,6 @@ namespace App\Http\Middleware;
 use App\Models\Tenant;
 use Closure;
 use Illuminate\Http\Request;
-use Laravel\Sanctum\PersonalAccessToken;
 use Symfony\Component\HttpFoundation\Response;
 
 class IdentifyTenant
@@ -20,31 +19,17 @@ class IdentifyTenant
         $tenant = $this->resolveTenant($request);
 
         if ($tenant) {
-            app()->instance('tenant', $tenant);
-            auth()->setDefaultDriver('sanctum');
-
-            // Strictly cross-check authenticated user's tenant_id
-            // We manually check the token here because this middleware might run before Auth middleware
-            $token = $request->bearerToken();
-            if ($token) { // Only check if token is provided
-                $accessToken = PersonalAccessToken::findToken($token);
-                
-                // If token exists and resolves to a user
-                // Use tokenable_type/id to avoid recursion in TenantScoped
-                if ($accessToken) {
-                    $type = $accessToken->tokenable_type;
-                    $id = $accessToken->tokenable_id;
-                    
-                    // Assume it's a User or similar with tenant_id, load without scope to allow cross-check
-                    if (class_exists($type)) {
-                        $user = $type::withoutGlobalScope('tenant')->find($id);
-                         
-                        if ($user && isset($user->tenant_id) && $user->tenant_id !== $tenant->id) {
-                            abort(403, 'Unauthorized access: User belongs to a different tenant.');
-                        }
-                    }
+            // Check for potential tenant hopping
+            if (auth('sanctum')->check()) {
+                // Use strict comparison as requested
+                if ((string) auth('sanctum')->user()->tenant_id !== (string) $tenant->id) {
+                    return response()->json(['message' => 'Forbidden'], 403);
                 }
             }
+
+            // Only set the tenant instance if validation passes
+            app()->instance('tenant', $tenant);
+            auth()->setDefaultDriver('sanctum');
         }
 
         return $next($request);

@@ -6,6 +6,7 @@ namespace App\Traits;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use RuntimeException;
 
 trait TenantScoped
 {
@@ -34,10 +35,17 @@ trait TenantScoped
         });
 
         static::creating(function (Model $model) {
-            if (auth()->check() && auth()->user()->tenant_id) {
+            // Allow setting tenant_id manually (e.g., during seeding, testing, or registration)
+            if (!empty($model->tenant_id)) {
+                return;
+            }
+
+            if (auth()->check()) {
                 $model->tenant_id = auth()->user()->tenant_id;
             } elseif (app()->bound('tenant')) {
                 $model->tenant_id = app('tenant')->id;
+            } else {
+                throw new RuntimeException('Tenant ID is missing. Cannot save orphan data.');
             }
         });
     }

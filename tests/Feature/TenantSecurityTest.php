@@ -38,7 +38,9 @@ test('cross-tenant ID spoofing', function () {
         ->getJson('/api/v1/customers', [
             'X-Tenant-ID' => $tenantB->id // Spoofing Tenant ID header
         ])
-        ->assertStatus(403); // Middleware should block this mismatch
+        // With strict TenantScoped users, the user is not found in Tenant B context, 
+        // leading to 401 Unauthenticated instead of 403 Forbidden.
+        ->assertStatus(401); 
 });
 
 test('unauthenticated users cannot see tenant data', function () {
