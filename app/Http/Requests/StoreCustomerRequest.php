@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCustomerRequest extends FormRequest
 {
@@ -26,8 +27,18 @@ class StoreCustomerRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'name_local' => ['nullable', 'array'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'email' => [
+                'nullable',
+                'email',
+                'max:255',
+                Rule::unique('customers')->where(fn ($query) => $query->where('tenant_id', $this->user()->tenant_id)),
+            ],
+            'phone' => [
+                'required',
+                'string',
+                'max:20',
+                Rule::unique('customers')->where(fn ($query) => $query->where('tenant_id', $this->user()->tenant_id)),
+            ],
             'phone_alt' => ['nullable', 'string', 'max:20'],
             'address' => ['nullable', 'string', 'max:500'],
             'city' => ['nullable', 'string', 'max:100'],
