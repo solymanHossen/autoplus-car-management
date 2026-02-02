@@ -35,6 +35,11 @@ trait TenantScoped
         });
 
         static::creating(function (Model $model) {
+            // Allow setting tenant_id manually (e.g., during seeding, testing, or registration)
+            if (!empty($model->tenant_id)) {
+                return;
+            }
+
             if (auth()->check()) {
                 $model->tenant_id = auth()->user()->tenant_id;
             } elseif (app()->bound('tenant')) {

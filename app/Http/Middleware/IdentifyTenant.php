@@ -22,7 +22,7 @@ class IdentifyTenant
             // Check for potential tenant hopping
             if (auth('sanctum')->check()) {
                 // Use strict comparison as requested
-                if (auth('sanctum')->user()->tenant_id !== $tenant->id) {
+                if ((string) auth('sanctum')->user()->tenant_id !== (string) $tenant->id) {
                     return response()->json(['message' => 'Forbidden'], 403);
                 }
             }
