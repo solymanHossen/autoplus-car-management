@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreJobCardRequest extends FormRequest
 {
@@ -24,9 +25,21 @@ class StoreJobCardRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
-            'vehicle_id' => ['required', 'integer', 'exists:vehicles,id'],
-            'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
+            'customer_id' => [
+                'required',
+                'integer',
+                Rule::exists('customers', 'id')->where('tenant_id', $this->user()->tenant_id),
+            ],
+            'vehicle_id' => [
+                'required',
+                'integer',
+                Rule::exists('vehicles', 'id')->where('tenant_id', $this->user()->tenant_id),
+            ],
+            'assigned_to' => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')->where('tenant_id', $this->user()->tenant_id),
+            ],
             'status' => ['required', 'string', 'in:pending,in_progress,completed,on_hold,cancelled'],
             'priority' => ['required', 'string', 'in:low,medium,high,urgent'],
             'mileage_in' => ['nullable', 'integer', 'min:0'],

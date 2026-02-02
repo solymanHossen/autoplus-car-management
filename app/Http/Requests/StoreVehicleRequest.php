@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreVehicleRequest extends FormRequest
 {
@@ -24,13 +25,22 @@ class StoreVehicleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
+            'customer_id' => [
+                'required',
+                'integer',
+                Rule::exists('customers', 'id')->where('tenant_id', $this->user()->tenant_id),
+            ],
             'registration_number' => ['required', 'string', 'max:50'],
             'make' => ['required', 'string', 'max:100'],
             'model' => ['required', 'string', 'max:100'],
             'year' => ['required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'color' => ['nullable', 'string', 'max:50'],
-            'vin' => ['nullable', 'string', 'max:50', 'unique:vehicles,vin'],
+            'vin' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('vehicles', 'vin')->where('tenant_id', $this->user()->tenant_id),
+            ],
             'engine_number' => ['nullable', 'string', 'max:100'],
             'current_mileage' => ['required', 'integer', 'min:0'],
             'last_service_date' => ['nullable', 'date'],

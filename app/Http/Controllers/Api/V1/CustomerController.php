@@ -22,21 +22,17 @@ class CustomerController extends ApiController
      */
     public function index(): JsonResponse
     {
-        try {
-            $customers = QueryBuilder::for(Customer::class)
-                ->allowedFilters(['name', 'email', 'phone', 'city'])
-                ->allowedSorts(['name', 'created_at', 'updated_at'])
-                ->withCount('vehicles')
-                ->paginate(15);
+        $customers = QueryBuilder::for(Customer::class)
+            ->allowedFilters(['name', 'email', 'phone', 'city'])
+            ->allowedSorts(['name', 'created_at', 'updated_at'])
+            ->withCount('vehicles')
+            ->paginate(15);
 
-            return $this->paginatedResponse(
-                $customers,
-                CustomerResource::class,
-                'Customers retrieved successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve customers: '.$e->getMessage(), 500);
-        }
+        return $this->paginatedResponse(
+            $customers,
+            CustomerResource::class,
+            'Customers retrieved successfully'
+        );
     }
 
     /**
@@ -65,16 +61,12 @@ class CustomerController extends ApiController
      */
     public function show(Customer $customer): JsonResponse
     {
-        try {
-            $customer->loadCount('vehicles');
+        $customer->loadCount('vehicles');
 
-            return $this->successResponse(
-                new CustomerResource($customer),
-                'Customer retrieved successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve customer: '.$e->getMessage(), 500);
-        }
+        return $this->successResponse(
+            new CustomerResource($customer),
+            'Customer retrieved successfully'
+        );
     }
 
     /**
@@ -82,16 +74,12 @@ class CustomerController extends ApiController
      */
     public function update(UpdateCustomerRequest $request, Customer $customer): JsonResponse
     {
-        try {
-            $customer->update($request->validated());
+        $customer->update($request->validated());
 
-            return $this->successResponse(
-                new CustomerResource($customer->fresh()),
-                'Customer updated successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update customer: '.$e->getMessage(), 500);
-        }
+        return $this->successResponse(
+            new CustomerResource($customer->fresh()),
+            'Customer updated successfully'
+        );
     }
 
     /**
@@ -99,15 +87,11 @@ class CustomerController extends ApiController
      */
     public function destroy(Customer $customer): JsonResponse
     {
-        try {
-            $customer->delete();
+        $customer->delete();
 
-            return $this->successResponse(
-                null,
-                'Customer deleted successfully'
-            );
-        } catch (\Exception $e) {
-            return $this->errorResponse('Failed to delete customer: '.$e->getMessage(), 500);
-        }
+        return $this->successResponse(
+            null,
+            'Customer deleted successfully'
+        );
     }
 }
