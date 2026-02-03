@@ -7,16 +7,14 @@ use Illuminate\Support\Facades\Hash;
 
 uses(RefreshDatabase::class);
 
-test('a user can register', function () {
-    // Create a tenant so registration can pick it up
-    $tenant = Tenant::factory()->create();
-
+test('a tenant can register', function () {
     $response = $this->postJson(route('api.v1.auth.register'), [
+        'company_name' => 'Acme Inc',
+        'domain' => 'acme.com',
         'name' => 'John Doe',
         'email' => 'john@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
-        'tenant_id' => $tenant->id,
     ]);
 
     $response->assertCreated();
@@ -24,6 +22,7 @@ test('a user can register', function () {
         'success',
         'data' => [
             'user',
+            'tenant',
             'token',
         ],
         'message',
@@ -31,7 +30,11 @@ test('a user can register', function () {
 
     $this->assertDatabaseHas('users', [
         'email' => 'john@example.com',
-        'tenant_id' => $tenant->id,
+    ]);
+
+    $this->assertDatabaseHas('tenants', [
+        'name' => 'Acme Inc',
+        'domain' => 'acme.com',
     ]);
 });
 

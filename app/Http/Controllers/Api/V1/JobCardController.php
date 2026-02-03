@@ -21,7 +21,8 @@ use Spatie\QueryBuilder\QueryBuilder;
 class JobCardController extends ApiController
 {
     public function __construct(
-        protected JobCardService $jobCardService
+        protected JobCardService $jobCardService,
+        protected \App\Repositories\JobCardRepository $jobCardRepository
     ) {}
 
     /**
@@ -29,11 +30,7 @@ class JobCardController extends ApiController
      */
     public function index(): JsonResponse
     {
-        $jobCards = QueryBuilder::for(JobCard::class)
-            ->allowedFilters(['status', 'priority', 'customer_id', 'vehicle_id', 'assigned_to'])
-            ->allowedSorts(['job_number', 'status', 'priority', 'created_at', 'estimated_completion'])
-            ->allowedIncludes(['customer', 'vehicle', 'assignedTo', 'jobCardItems'])
-            ->paginate(15);
+        $jobCards = $this->jobCardRepository->getPaginatedList();
 
         return $this->paginatedResponse(
             $jobCards,

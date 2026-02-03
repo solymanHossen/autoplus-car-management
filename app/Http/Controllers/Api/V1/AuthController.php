@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\ApiController;
+use App\Actions\Auth\RegisterTenantAction;
 use App\Http\Requests\LoginRequest;
-use App\Http\Requests\RegisterRequest;
+use App\Http\Requests\RegisterTenantRequest;
 use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -19,41 +20,26 @@ use Illuminate\Validation\ValidationException;
  */
 class AuthController extends ApiController
 {
+    public function __construct(
+        protected RegisterTenantAction $registerTenantAction
+    ) {}
+
     /**
-     * Register a new user.
+     * Register a new Tenant (SaaS Signup).
      */
-    public function register(RegisterRequest $request): JsonResponse
+    public function register(RegisterTenantRequest $request): JsonResponse
     {
-        $data = $request->validated();
-
-        // Strictly require tenant_id
-        $tenantId = $request->input('tenant_id');
-
-        if (! $tenantId) {
-            throw ValidationException::withMessages([
-                'tenant_id' => ['The tenant_id field is required.'],
-            ]);
-        }
-
-        $data['tenant_id'] = $tenantId;
-        $data['role'] = $request->input('role', 'mechanic');
-
-        $user = User::create([
-            'tenant_id' => $data['tenant_id'],
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'phone' => $data['phone'] ?? null,
-            'role' => $data['role'],
-            'password' => Hash::make($data['password']),
-        ]);
+        $result = $this->registerTenantAction->execute($request->validated());
+        $user = $result['user'];
 
         $token = $this->createToken($user);
 
         return $this->successResponse([
             'user' => new UserResource($user),
+            'tenant' => $result['tenant'],
             'token' => $token,
             'token_type' => 'Bearer',
-        ], 'User registered successfully', 201);
+        ], 'Tenant registered successfully', 201);
     }
 
     /**
