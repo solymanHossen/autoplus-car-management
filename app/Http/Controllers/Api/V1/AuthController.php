@@ -134,15 +134,23 @@ class AuthController extends ApiController
 
     /**
      * Create a new token for the user.
+     * 
+     * @throws \RuntimeException If token creation fails.
      */
     private function createToken(User $user): string
     {
-        // Using Laravel Sanctum
-        if (method_exists($user, 'createToken')) {
-            return $user->createToken('auth_token')->plainTextToken;
+        // Security: Ensure the user model uses Sanctum's HasApiTokens
+        if (! method_exists($user, 'createToken')) {
+            // Log this critical configuration error in a real app
+            throw new \RuntimeException('Server Error: User model configuration invalid for API authentication.', 500);
         }
 
-        // Fallback to a simple token (not recommended for production)
-        return base64_encode($user->id.'|'.time());
+        $tokenDescriptor = $user->createToken('auth_token');
+
+        if (! $tokenDescriptor) {
+            throw new \RuntimeException('Server Error: Failed to generate access token.', 500);
+        }
+
+        return $tokenDescriptor->plainTextToken;
     }
 }
