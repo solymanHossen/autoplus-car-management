@@ -10,10 +10,11 @@ use App\Http\Requests\StoreJobCardRequest;
 use App\Http\Requests\UpdateJobCardRequest;
 use App\Http\Resources\JobCardResource;
 use App\Models\JobCard;
+use App\Repositories\JobCardRepository;
 use App\Services\JobCardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Spatie\QueryBuilder\QueryBuilder;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Job Card API Controller
@@ -22,7 +23,7 @@ class JobCardController extends ApiController
 {
     public function __construct(
         protected JobCardService $jobCardService,
-        protected \App\Repositories\JobCardRepository $jobCardRepository
+        protected JobCardRepository $jobCardRepository
     ) {}
 
     /**
@@ -44,24 +45,28 @@ class JobCardController extends ApiController
      */
     public function store(StoreJobCardRequest $request): JsonResponse
     {
-        $data = $request->validated();
-        $data['tenant_id'] = auth()->user()->tenant_id;
-        $data['job_number'] = $this->generateJobNumber();
+        // Use a database transaction to ensure atomicity and consistency.
+        // This is crucial for the job number generation lock to work correctly.
+        return DB::transaction(function () use ($request) {
+            $data = $request->validated();
+            
+            // Generate a unique job number safely within the transaction lock
+            $data['job_number'] = $this->generateJobNumber();
 
-        // Initialize amounts to zero
-        $data['subtotal'] = $data['subtotal'] ?? 0;
-        $data['tax_amount'] = $data['tax_amount'] ?? 0;
-        $data['discount_amount'] = $data['discount_amount'] ?? 0;
-        $data['total_amount'] = $data['total_amount'] ?? 0;
+            // Note: tenant_id is automatically handled by the TenantScoped observer/trait.
+            // Note: Default financial values (0) are handled by database default constraints.
 
-        $jobCard = JobCard::create($data);
-        $jobCard->load(['customer', 'vehicle', 'assignedTo']);
+            // Use the repository to create the job card
+            $jobCard = $this->jobCardRepository->create($data);
+            
+            $jobCard->load(['customer', 'vehicle', 'assignedTo']);
 
-        return $this->successResponse(
-            new JobCardResource($jobCard),
-            'Job card created successfully',
-            201
-        );
+            return $this->successResponse(
+                new JobCardResource($jobCard),
+                'Job card created successfully',
+                201
+            );
+        });
     }
 
     /**
@@ -110,11 +115,23 @@ class JobCardController extends ApiController
     {
         $validated = $request->validated();
 
-        // Calculate total
-        $subtotal = $validated['quantity'] * $validated['unit_price'];
-        $taxAmount = isset($validated['tax_rate']) ? ($subtotal * $validated['tax_rate'] / 100) : 0;
-        $discount = $validated['discount'] ?? 0;
-        $validated['total'] = $subtotal + $taxAmount - $discount;
+        // Use round() at every step to ensure financial precision to 2 decimal places.
+        // This prevents floating point errors (e.g., 19.9999998).
+        $quantity = $validated['quantity'];
+        $unitPrice = $validated['unit_price'];
+
+        $subtotal = round($quantity * $unitPrice, 2);
+        
+        $taxRate = $validated['tax_rate'] ?? 0;
+        $taxAmount = 0;
+        
+        if ($taxRate > 0) {
+            $taxAmount = round(($subtotal * $taxRate) / 100, 2);
+        }
+
+        $discount = isset($validated['discount']) ? round((float) $validated['discount'], 2) : 0;
+        
+        $validated['total'] = round($subtotal + $taxAmount - $discount, 2);
 
         $item = $jobCard->jobCardItems()->create($validated);
 
@@ -161,8 +178,10 @@ class JobCardController extends ApiController
         $year = date('Y');
         $month = date('m');
 
+        // Use lockForUpdate to prevent race conditions
         $lastJob = JobCard::where('job_number', 'LIKE', "{$prefix}-{$year}{$month}%")
             ->orderBy('job_number', 'desc')
+            ->lockForUpdate()
             ->first();
 
         if ($lastJob) {
