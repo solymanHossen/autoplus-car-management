@@ -37,7 +37,7 @@ test('recalculateTotals correctly sums items and updates job card', function () 
         'total' => 50.00,
     ]);
 
-    $service = new JobCardService();
+    $service = app(JobCardService::class);
     $updatedJobCard = $service->recalculateTotals($jobCard);
 
     // Assertions
@@ -61,7 +61,7 @@ test('recalculateTotals handles empty items', function () {
         'discount_amount' => 0,
     ]);
 
-    $service = new JobCardService();
+    $service = app(JobCardService::class);
     $updatedJobCard = $service->recalculateTotals($jobCard);
 
     expect($updatedJobCard->subtotal)->toEqual(0)
