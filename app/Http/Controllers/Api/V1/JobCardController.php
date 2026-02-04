@@ -45,28 +45,15 @@ class JobCardController extends ApiController
      */
     public function store(StoreJobCardRequest $request): JsonResponse
     {
-        // Use a database transaction to ensure atomicity and consistency.
-        // This is crucial for the job number generation lock to work correctly.
-        return DB::transaction(function () use ($request) {
-            $data = $request->validated();
-            
-            // Generate a unique job number safely within the transaction lock
-            $data['job_number'] = $this->generateJobNumber();
+        $jobCard = $this->jobCardService->createJobCard($request->validated());
 
-            // Note: tenant_id is automatically handled by the TenantScoped observer/trait.
-            // Note: Default financial values (0) are handled by database default constraints.
+        $jobCard->load(['customer', 'vehicle', 'assignedTo']);
 
-            // Use the repository to create the job card
-            $jobCard = $this->jobCardRepository->create($data);
-            
-            $jobCard->load(['customer', 'vehicle', 'assignedTo']);
-
-            return $this->successResponse(
-                new JobCardResource($jobCard),
-                'Job card created successfully',
-                201
-            );
-        });
+        return $this->successResponse(
+            new JobCardResource($jobCard),
+            'Job card created successfully',
+            201
+        );
     }
 
     /**
@@ -167,30 +154,5 @@ class JobCardController extends ApiController
             new JobCardResource($jobCard->fresh()),
             'Job card status updated successfully'
         );
-    }
-
-    /**
-     * Generate a unique job number.
-     */
-    private function generateJobNumber(): string
-    {
-        $prefix = 'JOB';
-        $year = date('Y');
-        $month = date('m');
-
-        // Use lockForUpdate to prevent race conditions
-        $lastJob = JobCard::where('job_number', 'LIKE', "{$prefix}-{$year}{$month}%")
-            ->orderBy('job_number', 'desc')
-            ->lockForUpdate()
-            ->first();
-
-        if ($lastJob) {
-            $lastNumber = (int) substr($lastJob->job_number, -4);
-            $newNumber = str_pad((string) ($lastNumber + 1), 4, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '0001';
-        }
-
-        return "{$prefix}-{$year}{$month}{$newNumber}";
     }
 }
