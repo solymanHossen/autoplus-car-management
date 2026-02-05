@@ -20,7 +20,6 @@ test('recalculateTotals correctly sums items and updates job card', function () 
 
     // Helper to create items (Factory missing)
     $jobCard->jobCardItems()->create([
-        'tenant_id' => $tenant->id,
         'item_type' => 'part',
         'quantity' => 2,
         'unit_price' => 100.00,
@@ -29,7 +28,6 @@ test('recalculateTotals correctly sums items and updates job card', function () 
     ]);
 
     $jobCard->jobCardItems()->create([
-        'tenant_id' => $tenant->id,
         'item_type' => 'service',
         'quantity' => 1,
         'unit_price' => 50.00,
