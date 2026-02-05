@@ -24,11 +24,14 @@ test('login route has stricter rate limits', function () {
     // We won't flood it, just check headers if possible, or trust general throttling involves login.
     // Note: Login often returns 429 after exactly 5 attempts. 
     
+    $tenant = Tenant::factory()->create();
+
     // Let's verify headers exist on a failed login to ensure protection even on failure
-    $response = $this->postJson(route('api.v1.auth.login'), [
-        'email' => 'wrong@example.com',
-        'password' => 'wrong',
-    ]);
+    $response = $this->withHeaders(['X-Tenant-ID' => $tenant->id])
+        ->postJson(route('api.v1.auth.login'), [
+            'email' => 'wrong@example.com',
+            'password' => 'wrong',
+        ]);
     
     $response->assertStatus(401);
     // Login throttling might handle headers differently depending on implementation (RateLimiter vs middleware)

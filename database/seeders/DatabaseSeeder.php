@@ -16,19 +16,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
-
-        $tenant = Tenant::factory()->create([
-            'name' => 'Test Tenant',
-            'domain' => 'test.autopulse.local',
-            'subdomain' => 'test',
+        // Tenant A
+        $tenantA = Tenant::factory()->create([
+            'name' => 'Tenant A',
+            'domain' => 'tenant-a.local',
+            'subdomain' => 'tenant-a',
         ]);
 
         User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
-            'tenant_id' => $tenant->id,
+            'name' => 'User A',
+            'email' => 'test@example.com', // SAME EMAIL
+            'tenant_id' => $tenantA->id,
             'role' => 'owner',
+            'password' => bcrypt('password-a'), // Different password
+        ]);
+
+        // Tenant B
+        $tenantB = Tenant::factory()->create([
+            'name' => 'Tenant B',
+            'domain' => 'tenant-b.local',
+            'subdomain' => 'tenant-b',
+        ]);
+
+        User::factory()->create([
+            'name' => 'User B',
+            'email' => 'test@example.com', // SAME EMAIL
+            'tenant_id' => $tenantB->id,
+            'role' => 'owner',
+            'password' => bcrypt('password-b'), // Different password
         ]);
     }
 }

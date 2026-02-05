@@ -47,12 +47,25 @@ class AuthController extends ApiController
      */
     public function login(LoginRequest $request): JsonResponse
     {
+        // Security: Ensure we are in a tenant context before attempting login.
+        // Because emails are not unique globally, we MUST know which tenant to look in.
+        if (! app()->bound('tenant')) {
+            return $this->errorResponse('Tenant identification required. Please provide X-Tenant-ID header or use a tenant domain.', 400);
+        }
+
         $credentials = $request->validated();
 
+        // User lookup is scoped by the TenantScoped trait implicitly.
         $user = User::where('email', $credentials['email'])->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
             return $this->errorResponse('Invalid credentials', 401);
+        }
+
+        // Security: Verify user belongs to current tenant (Defense in Depth)
+        // This is technically redundant due to TenantScoped but vital for security logic auditing.
+        if ($user->tenant_id !== app('tenant')->id) {
+             return $this->errorResponse('Access denied.', 403);
         }
 
         // Manually log in the user if needed by other logic, but usually for API we just issue token
