@@ -24,7 +24,9 @@ class JobCardController extends ApiController
     public function __construct(
         protected JobCardService $jobCardService,
         protected JobCardRepository $jobCardRepository
-    ) {}
+    ) {
+        $this->authorizeResource(JobCard::class, 'job_card');
+    }
 
     /**
      * Display a listing of job cards.
@@ -74,7 +76,7 @@ class JobCardController extends ApiController
      */
     public function update(UpdateJobCardRequest $request, JobCard $jobCard): JsonResponse
     {
-        $jobCard->update($request->validated());
+        $jobCard = $this->jobCardService->updateJobCard($jobCard, $request->validated());
 
         return $this->successResponse(
             new JobCardResource($jobCard->fresh()->load(['customer', 'vehicle', 'assignedTo'])),
@@ -100,30 +102,7 @@ class JobCardController extends ApiController
      */
     public function addItem(StoreJobCardItemRequest $request, JobCard $jobCard): JsonResponse
     {
-        $validated = $request->validated();
-
-        // Use round() at every step to ensure financial precision to 2 decimal places.
-        // This prevents floating point errors (e.g., 19.9999998).
-        $quantity = $validated['quantity'];
-        $unitPrice = $validated['unit_price'];
-
-        $subtotal = round($quantity * $unitPrice, 2);
-        
-        $taxRate = $validated['tax_rate'] ?? 0;
-        $taxAmount = 0;
-        
-        if ($taxRate > 0) {
-            $taxAmount = round(($subtotal * $taxRate) / 100, 2);
-        }
-
-        $discount = isset($validated['discount']) ? round((float) $validated['discount'], 2) : 0;
-        
-        $validated['total'] = round($subtotal + $taxAmount - $discount, 2);
-
-        $item = $jobCard->jobCardItems()->create($validated);
-
-        // Recalculate job card totals
-        $this->jobCardService->recalculateTotals($jobCard);
+        $item = $this->jobCardService->addJobCardItem($jobCard, $request->validated());
 
         return $this->successResponse(
             $item,
