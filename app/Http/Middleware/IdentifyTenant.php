@@ -40,12 +40,17 @@ class IdentifyTenant
      */
     protected function resolveTenant(Request $request): ?Tenant
     {
+        // 1. Priority: Check for explicit API Header (supports Postman/Mobile Apps)
+        if ($tenant = $this->resolveByHeader($request)) {
+            return $tenant;
+        }
+
+        // 2. Standard: Use configured identification method
         $identificationMethod = config('tenant.identification_method', 'domain');
 
         return match ($identificationMethod) {
             'domain' => $this->resolveByDomain($request),
             'subdomain' => $this->resolveBySubdomain($request),
-            'header' => $this->resolveByHeader($request),
             default => null,
         };
     }
