@@ -42,7 +42,7 @@ class StatsOverviewWidget extends BaseWidget
                 ->description('In progress')
                 ->descriptionIcon('heroicon-m-wrench-screwdriver')
                 ->color('warning'),
-            Stat::make('Pending Invoice Balance', '$' . number_format((float) Invoice::whereIn('status', ['sent', 'overdue', 'partially_paid'])->sum('balance'), 2))
+            Stat::make('Pending Invoice Balance', '$'.number_format((float) Invoice::whereIn('status', ['sent', 'overdue', 'partially_paid'])->sum('balance'), 2))
                 ->description('Outstanding amount')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('danger'),
@@ -72,7 +72,7 @@ class StatsOverviewWidget extends BaseWidget
     protected function getAccountantStats(): array
     {
         return [
-            Stat::make('Pending Invoice Balance', '$' . number_format((float) Invoice::whereIn('status', ['sent', 'overdue', 'partially_paid'])->sum('balance'), 2))
+            Stat::make('Pending Invoice Balance', '$'.number_format((float) Invoice::whereIn('status', ['sent', 'overdue', 'partially_paid'])->sum('balance'), 2))
                 ->description('Outstanding amount')
                 ->descriptionIcon('heroicon-m-banknotes')
                 ->color('danger'),
@@ -80,7 +80,7 @@ class StatsOverviewWidget extends BaseWidget
                 ->description('Past due date')
                 ->descriptionIcon('heroicon-m-exclamation-triangle')
                 ->color('danger'),
-            Stat::make('Payments This Month', '$' . number_format((float) \App\Models\Payment::whereMonth('payment_date', now()->month)->whereYear('payment_date', now()->year)->sum('amount'), 2))
+            Stat::make('Payments This Month', '$'.number_format((float) \App\Models\Payment::whereMonth('payment_date', now()->month)->whereYear('payment_date', now()->year)->sum('amount'), 2))
                 ->description('Collected this month')
                 ->descriptionIcon('heroicon-m-currency-dollar')
                 ->color('success'),

@@ -80,7 +80,7 @@ class User extends Authenticatable implements FilamentUser
      */
     public function hasPermission(string $permission): bool
     {
-        $rolePermissions = config('permissions.role_permissions.' . $this->role, []);
+        $rolePermissions = config('permissions.role_permissions.'.$this->role, []);
 
         if (in_array('*', $rolePermissions, true)) {
             return true;

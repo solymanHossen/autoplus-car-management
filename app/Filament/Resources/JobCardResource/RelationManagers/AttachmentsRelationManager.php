@@ -36,7 +36,7 @@ class AttachmentsRelationManager extends RelationManager
                 Tables\Columns\TextColumn::make('file_name'),
                 Tables\Columns\TextColumn::make('file_type'),
                 Tables\Columns\TextColumn::make('file_size')
-                    ->formatStateUsing(fn ($state) => $state ? number_format($state / 1024, 2) . ' KB' : '-'),
+                    ->formatStateUsing(fn ($state) => $state ? number_format($state / 1024, 2).' KB' : '-'),
                 Tables\Columns\TextColumn::make('uploadedBy.name')
                     ->label('Uploaded By'),
                 Tables\Columns\TextColumn::make('created_at')

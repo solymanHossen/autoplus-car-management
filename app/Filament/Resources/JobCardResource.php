@@ -264,7 +264,7 @@ class JobCardResource extends Resource
                     ->action(function (JobCard $record) {
                         $invoice = $record->invoice()->create([
                             'tenant_id' => $record->tenant_id,
-                            'invoice_number' => 'INV-' . str_pad((string) (\App\Models\Invoice::count() + 1), 6, '0', STR_PAD_LEFT),
+                            'invoice_number' => 'INV-'.str_pad((string) (\App\Models\Invoice::count() + 1), 6, '0', STR_PAD_LEFT),
                             'customer_id' => $record->customer_id,
                             'invoice_date' => now(),
                             'due_date' => now()->addDays(30),
