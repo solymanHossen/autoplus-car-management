@@ -29,6 +29,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
+            ->registration(\App\Filament\Pages\Auth\Register::class)
+            ->passwordReset()
+            ->emailVerification()
+            ->profile()
             ->brandName('AutoPulse')
             ->colors([
                 'primary' => Color::hex('#2563eb'),
