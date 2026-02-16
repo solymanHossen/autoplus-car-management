@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateCustomerRequest;
 use App\Http\Resources\CustomerResource;
 use App\Models\Customer;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -20,13 +21,16 @@ class CustomerController extends ApiController
     /**
      * Display a listing of customers.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
+        $perPage = $this->resolvePerPage($request);
+
         $customers = QueryBuilder::for(Customer::class)
             ->allowedFilters(['name', 'email', 'phone', 'city'])
             ->allowedSorts(['name', 'created_at', 'updated_at'])
             ->withCount('vehicles')
-            ->paginate(15);
+            ->paginate($perPage)
+            ->appends($request->query());
 
         return $this->paginatedResponse(
             $customers,
@@ -52,7 +56,9 @@ class CustomerController extends ApiController
                 201
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create customer: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to create customer', 500);
         }
     }
 

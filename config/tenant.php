@@ -44,7 +44,7 @@ return [
     |
     */
     'central_domains' => [
-        env('APP_URL'),
+        parse_url((string) env('APP_URL', 'http://localhost'), PHP_URL_HOST) ?: 'localhost',
         'localhost',
         '127.0.0.1',
     ],

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateJobCardRequest extends FormRequest
 {
@@ -23,12 +24,28 @@ class UpdateJobCardRequest extends FormRequest
      */
     public function rules(): array
     {
+        $tenantId = $this->user()->tenant_id;
+
         return [
-            'customer_id' => ['sometimes', 'required', 'integer', 'exists:customers,id'],
-            'vehicle_id' => ['sometimes', 'required', 'integer', 'exists:vehicles,id'],
-            'assigned_to' => ['nullable', 'integer', 'exists:users,id'],
-            'status' => ['sometimes', 'required', 'string', 'in:pending,in_progress,completed,on_hold,cancelled'],
-            'priority' => ['sometimes', 'required', 'string', 'in:low,medium,high,urgent'],
+            'customer_id' => [
+                'sometimes',
+                'required',
+                'integer',
+                Rule::exists('customers', 'id')->where('tenant_id', $tenantId),
+            ],
+            'vehicle_id' => [
+                'sometimes',
+                'required',
+                'integer',
+                Rule::exists('vehicles', 'id')->where('tenant_id', $tenantId),
+            ],
+            'assigned_to' => [
+                'nullable',
+                'integer',
+                Rule::exists('users', 'id')->where('tenant_id', $tenantId),
+            ],
+            'status' => ['sometimes', 'required', 'string', 'in:pending,diagnosis,approval,working,qc,ready,delivered,on_hold,cancelled'],
+            'priority' => ['sometimes', 'required', 'string', 'in:low,normal,high,urgent'],
             'mileage_in' => ['nullable', 'integer', 'min:0'],
             'mileage_out' => ['nullable', 'integer', 'min:0'],
             'customer_notes' => ['nullable', 'string'],

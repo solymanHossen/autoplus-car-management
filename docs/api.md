@@ -105,7 +105,8 @@ Revokes the current authentication token.
 API requests are rate-limited to prevent abuse. Current limits:
 
 - **Authenticated requests:** 60 requests per minute
-- **Unauthenticated requests:** 10 requests per minute
+- **Login endpoint:** 5 requests per minute
+- **Registration endpoint:** 10 requests per minute
 
 Rate limit information is included in response headers:
 
@@ -187,7 +188,6 @@ GET /customers?page=2&per_page=20
 |------|---------|-------------|
 | 200 | OK | Request succeeded |
 | 201 | Created | Resource created successfully |
-| 204 | No Content | Request succeeded with no response body |
 | 400 | Bad Request | Invalid request format or parameters |
 | 401 | Unauthorized | Missing or invalid authentication token |
 | 403 | Forbidden | Insufficient permissions |
@@ -213,9 +213,9 @@ GET /customers?page=2&per_page=20
 
 ### Authentication Endpoints
 
-#### Register User
+#### Register Tenant
 
-Create a new user account.
+Create a new tenant workspace and owner account.
 
 **Endpoint:** `POST /auth/register`  
 **Auth:** None
@@ -223,12 +223,14 @@ Create a new user account.
 **Request:**
 ```json
 {
+  "company_name": "Acme Garage",
+  "domain": "acme.example.com",
+  "subdomain": "acme",
   "name": "John Doe",
   "email": "john@example.com",
   "password": "SecurePassword123",
   "password_confirmation": "SecurePassword123",
-  "phone": "+1234567890",
-  "role": "manager"
+  "phone": "+1234567890"
 }
 ```
 
@@ -237,17 +239,23 @@ Create a new user account.
 {
   "success": true,
   "data": {
+    "tenant": {
+      "id": "uuid-tenant-id",
+      "name": "Acme Garage",
+      "domain": "acme.example.com",
+      "subdomain": "acme"
+    },
     "user": {
       "id": 1,
       "tenant_id": "uuid-tenant-id",
       "name": "John Doe",
       "email": "john@example.com",
-      "role": "manager",
+      "role": "owner",
       "phone": "+1234567890"
     },
     "token": "1|abcdefghijklmnopqrstuvwxyz"
   },
-  "message": "Registration successful"
+  "message": "Tenant registered successfully"
 }
 ```
 

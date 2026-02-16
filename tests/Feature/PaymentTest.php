@@ -101,13 +101,7 @@ it('prevents recording payment for another tenants invoice', function () {
             'payment_method' => 'cash'
         ]);
 
-    // Should fail because Invoice B is not found in Tenant A's scope (Assuming scope is applied on retrieval/check)
-    // Or Validation error depending on implementation. 
-    // Usually Model::findOrFail($data['invoice_id']) is used in controller.
-    // However, if the query isn't scoped manually in 'store', it might find it if global scope isn't automatically applied on 'find' statically without auth context or if auth context is userA.
-    // TenantScoped checks auth()->user()->tenant_id. userA has tenantA. InvoiceB has tenantB.
-    // So Invoice::findOrFail($id) should fail with 404 ModelNotFound.
-    
-    // NOTE: Laravel's findOrFail does respect global scopes. The TenantScoped global scope adds "where tenant_id = X".
-    $response->assertStatus(500); // 404 ModelNotFoundException is caught by Controller generic try/catch and returns 500.
+    // Should fail because invoice validation is scoped to the authenticated tenant.
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['invoice_id']);
 });

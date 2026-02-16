@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateVehicleRequest;
 use App\Http\Resources\VehicleResource;
 use App\Models\Vehicle;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -20,14 +21,17 @@ class VehicleController extends ApiController
     /**
      * Display a listing of vehicles.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
+            $perPage = $this->resolvePerPage($request);
+
             $vehicles = QueryBuilder::for(Vehicle::class)
                 ->allowedFilters(['registration_number', 'make', 'model', 'customer_id'])
                 ->allowedSorts(['make', 'model', 'year', 'created_at'])
                 ->allowedIncludes(['customer'])
-                ->paginate(15);
+                ->paginate($perPage)
+                ->appends($request->query());
 
             return $this->paginatedResponse(
                 $vehicles,
@@ -35,7 +39,9 @@ class VehicleController extends ApiController
                 'Vehicles retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve vehicles: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to retrieve vehicles', 500);
         }
     }
 
@@ -58,7 +64,9 @@ class VehicleController extends ApiController
                 201
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create vehicle: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to create vehicle', 500);
         }
     }
 
@@ -75,7 +83,9 @@ class VehicleController extends ApiController
                 'Vehicle retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve vehicle: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to retrieve vehicle', 500);
         }
     }
 
@@ -92,7 +102,9 @@ class VehicleController extends ApiController
                 'Vehicle updated successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update vehicle: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to update vehicle', 500);
         }
     }
 
@@ -109,7 +121,9 @@ class VehicleController extends ApiController
                 'Vehicle deleted successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to delete vehicle: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to delete vehicle', 500);
         }
     }
 }

@@ -12,12 +12,26 @@ class JobCardPolicy
 {
     use HandlesAuthorization;
 
+    private function hasPermission(User $user, string $permission): bool
+    {
+        $rolePermissions = config('permissions.role_permissions', []);
+        $userPermissions = $rolePermissions[$user->role] ?? [];
+
+        return in_array('*', $userPermissions, true)
+            || in_array($permission, $userPermissions, true);
+    }
+
+    private function sameTenant(User $user, JobCard $jobCard): bool
+    {
+        return (string) $user->tenant_id === (string) $jobCard->tenant_id;
+    }
+
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user): bool
     {
-        return true;
+        return $this->hasPermission($user, 'view-job-cards');
     }
 
     /**
@@ -25,7 +39,8 @@ class JobCardPolicy
      */
     public function view(User $user, JobCard $jobCard): bool
     {
-        return true;
+        return $this->sameTenant($user, $jobCard)
+            && $this->hasPermission($user, 'view-job-cards');
     }
 
     /**
@@ -33,7 +48,7 @@ class JobCardPolicy
      */
     public function create(User $user): bool
     {
-        return true;
+        return $this->hasPermission($user, 'create-job-cards');
     }
 
     /**
@@ -41,7 +56,8 @@ class JobCardPolicy
      */
     public function update(User $user, JobCard $jobCard): bool
     {
-        return true;
+        return $this->sameTenant($user, $jobCard)
+            && $this->hasPermission($user, 'edit-job-cards');
     }
 
     /**
@@ -49,6 +65,7 @@ class JobCardPolicy
      */
     public function delete(User $user, JobCard $jobCard): bool
     {
-        return in_array($user->role, ['admin', 'owner']);
+        return $this->sameTenant($user, $jobCard)
+            && $this->hasPermission($user, 'delete-job-cards');
     }
 }

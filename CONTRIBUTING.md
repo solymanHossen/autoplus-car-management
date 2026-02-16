@@ -55,14 +55,14 @@ We are committed to providing a welcoming and inclusive environment for all cont
 2. Clone your fork locally:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/autoplus-car-management.git
-cd autoplus-car-management
+git clone https://github.com/YOUR_USERNAME/autopulse.git
+cd autopulse
 ```
 
 3. Add the upstream repository:
 
 ```bash
-git remote add upstream https://github.com/ORIGINAL_OWNER/autoplus-car-management.git
+git remote add upstream https://github.com/ORIGINAL_OWNER/autopulse.git
 ```
 
 ### Local Setup

@@ -32,10 +32,10 @@ Route::prefix('v1')->group(function () {
     // Authentication Routes (Public)
     Route::prefix('auth')->group(function () {
         Route::post('login', [AuthController::class, 'login'])->middleware('throttle:5,1')->name('api.v1.auth.login');
-        Route::post('register', [AuthController::class, 'register'])->name('api.v1.auth.register');
+        Route::post('register', [AuthController::class, 'register'])->middleware('throttle:10,1')->name('api.v1.auth.register');
 
         // Protected Auth Routes
-        Route::middleware('auth:sanctum')->group(function () {
+        Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
             Route::post('logout', [AuthController::class, 'logout'])->name('api.v1.auth.logout');
             Route::post('refresh', [AuthController::class, 'refresh'])->name('api.v1.auth.refresh');
             Route::get('me', [AuthController::class, 'me'])->name('api.v1.auth.me');

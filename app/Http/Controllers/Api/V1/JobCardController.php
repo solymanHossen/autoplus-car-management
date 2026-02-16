@@ -14,7 +14,6 @@ use App\Repositories\JobCardRepository;
 use App\Services\JobCardService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 /**
  * Job Card API Controller
@@ -25,15 +24,16 @@ class JobCardController extends ApiController
         protected JobCardService $jobCardService,
         protected JobCardRepository $jobCardRepository
     ) {
-        $this->authorizeResource(JobCard::class, 'job_card');
+        $this->authorizeResource(JobCard::class, 'jobCard');
     }
 
     /**
      * Display a listing of job cards.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $jobCards = $this->jobCardRepository->getPaginatedList();
+        $perPage = $this->resolvePerPage($request);
+        $jobCards = $this->jobCardRepository->getPaginatedList($perPage)->appends($request->query());
 
         return $this->paginatedResponse(
             $jobCards,
