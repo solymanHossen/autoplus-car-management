@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateVehicleRequest extends FormRequest
 {
@@ -24,15 +25,29 @@ class UpdateVehicleRequest extends FormRequest
     public function rules(): array
     {
         $vehicleId = $this->route('vehicle');
+        $vehicleId = is_object($vehicleId) ? $vehicleId->id : $vehicleId;
+        $tenantId = $this->user()->tenant_id;
 
         return [
-            'customer_id' => ['sometimes', 'required', 'integer', 'exists:customers,id'],
+            'customer_id' => [
+                'sometimes',
+                'required',
+                'integer',
+                Rule::exists('customers', 'id')->where('tenant_id', $tenantId),
+            ],
             'registration_number' => ['sometimes', 'required', 'string', 'max:50'],
             'make' => ['sometimes', 'required', 'string', 'max:100'],
             'model' => ['sometimes', 'required', 'string', 'max:100'],
             'year' => ['sometimes', 'required', 'integer', 'min:1900', 'max:'.(date('Y') + 1)],
             'color' => ['nullable', 'string', 'max:50'],
-            'vin' => ['nullable', 'string', 'max:50', 'unique:vehicles,vin,'.$vehicleId],
+            'vin' => [
+                'nullable',
+                'string',
+                'max:50',
+                Rule::unique('vehicles', 'vin')
+                    ->ignore($vehicleId)
+                    ->where(fn ($query) => $query->where('tenant_id', $tenantId)),
+            ],
             'engine_number' => ['nullable', 'string', 'max:100'],
             'current_mileage' => ['sometimes', 'required', 'integer', 'min:0'],
             'last_service_date' => ['nullable', 'date'],

@@ -51,6 +51,8 @@ class IdentifyTenant
         return match ($identificationMethod) {
             'domain' => $this->resolveByDomain($request),
             'subdomain' => $this->resolveBySubdomain($request),
+            'header' => $this->resolveByHeader($request),
+            'path' => $this->resolveByPath($request),
             default => null,
         };
     }
@@ -62,9 +64,7 @@ class IdentifyTenant
     {
         $host = $request->getHost();
 
-        return Tenant::where('domain', $host)
-            ->orWhere('subdomain', $host)
-            ->first();
+        return Tenant::where('domain', $host)->first();
     }
 
     /**
@@ -75,11 +75,27 @@ class IdentifyTenant
         $host = $request->getHost();
         $subdomain = explode('.', $host)[0] ?? null;
 
-        if (! $subdomain || in_array($host, config('tenant.central_domains', []))) {
+        if (! $subdomain || in_array($host, config('tenant.central_domains', []), true)) {
             return null;
         }
 
         return Tenant::where('subdomain', $subdomain)->first();
+    }
+
+    /**
+     * Resolve tenant by path segment (first URI segment).
+     */
+    protected function resolveByPath(Request $request): ?Tenant
+    {
+        $segment = $request->segment(1);
+
+        if (! $segment || in_array($segment, ['api', 'v1'], true)) {
+            return null;
+        }
+
+        return Tenant::where('subdomain', $segment)
+            ->orWhere('id', $segment)
+            ->first();
     }
 
     /**

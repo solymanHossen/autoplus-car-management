@@ -13,7 +13,7 @@ components:
     BearerAuth:
       type: http
       scheme: bearer
-      bearerFormat: JWT
+      bearerFormat: Sanctum
   schemas:
     ValidationError:
       type: object
@@ -274,7 +274,7 @@ paths:
       parameters:
         - { name: id, in: path, required: true, schema: { type: integer } }
       responses:
-        '204':
+        '200':
           description: Customer deleted
 
   /vehicles:
@@ -326,7 +326,7 @@ paths:
       parameters:
         - { name: id, in: path, required: true, schema: { type: integer } }
       responses:
-        '204':
+        '200':
           description: Vehicle deleted
 
   /job-cards:
@@ -379,7 +379,7 @@ paths:
       parameters:
         - { name: id, in: path, required: true, schema: { type: integer } }
       responses:
-        '204':
+        '200':
           description: Job card deleted
 
   /job-cards/{id}/items:
@@ -462,7 +462,7 @@ paths:
       parameters:
         - { name: id, in: path, required: true, schema: { type: integer } }
       responses:
-        '204':
+        '200':
           description: Invoice deleted
 
   /payments:
@@ -507,7 +507,7 @@ paths:
       parameters:
         - { name: id, in: path, required: true, schema: { type: integer } }
       responses:
-        '204':
+        '200':
           description: Payment deleted
 
   /appointments:
@@ -552,7 +552,7 @@ paths:
       parameters:
         - { name: id, in: path, required: true, schema: { type: integer } }
       responses:
-        '204':
+        '200':
           description: Appointment deleted
 
   /appointments/{id}/confirm:

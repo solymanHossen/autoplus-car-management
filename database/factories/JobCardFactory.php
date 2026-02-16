@@ -34,9 +34,16 @@ class JobCardFactory extends Factory
         return [
             'tenant_id' => Tenant::factory(),
             'job_number' => 'JOB-'.str_pad((string) self::$jobNumberCounter++, 6, '0', STR_PAD_LEFT),
-            'customer_id' => Customer::factory(),
-            'vehicle_id' => Vehicle::factory(),
-            'assigned_to' => fake()->optional(0.7)->passthrough(User::factory()),
+            'customer_id' => fn (array $attributes) => Customer::factory()->create([
+                'tenant_id' => $attributes['tenant_id'],
+            ])->id,
+            'vehicle_id' => fn (array $attributes) => Vehicle::factory()->create([
+                'tenant_id' => $attributes['tenant_id'],
+                'customer_id' => $attributes['customer_id'],
+            ])->id,
+            'assigned_to' => fn (array $attributes) => fake()->boolean(70)
+                ? User::factory()->create(['tenant_id' => $attributes['tenant_id']])->id
+                : null,
             'status' => $status,
             'priority' => fake()->randomElement(['low', 'normal', 'high', 'urgent']),
             'mileage_in' => fake()->numberBetween(10000, 200000),

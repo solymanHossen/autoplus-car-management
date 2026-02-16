@@ -18,7 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Register custom middleware aliases
         $middleware->alias([
             'tenant' => \App\Http\Middleware\IdentifyTenant::class,
-            'can' => \App\Http\Middleware\CheckPermission::class,
+            'permission' => \App\Http\Middleware\CheckPermission::class,
         ]);
 
         // Apply tenant identification middleware to API routes

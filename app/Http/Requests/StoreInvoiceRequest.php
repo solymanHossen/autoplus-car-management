@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreInvoiceRequest extends FormRequest
 {
@@ -23,9 +24,19 @@ class StoreInvoiceRequest extends FormRequest
      */
     public function rules(): array
     {
+        $tenantId = $this->user()->tenant_id;
+
         return [
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
-            'job_card_id' => ['nullable', 'integer', 'exists:job_cards,id'],
+            'customer_id' => [
+                'required',
+                'integer',
+                Rule::exists('customers', 'id')->where('tenant_id', $tenantId),
+            ],
+            'job_card_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('job_cards', 'id')->where('tenant_id', $tenantId),
+            ],
             'invoice_date' => ['required', 'date'],
             'due_date' => ['required', 'date', 'after_or_equal:invoice_date'],
             'subtotal' => ['required', 'numeric', 'min:0'],

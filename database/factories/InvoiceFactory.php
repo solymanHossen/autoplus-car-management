@@ -42,8 +42,15 @@ class InvoiceFactory extends Factory
         return [
             'tenant_id' => Tenant::factory(),
             'invoice_number' => 'INV-'.date('Y', $invoiceDate->getTimestamp()).'-'.str_pad((string) self::$invoiceNumberCounter++, 5, '0', STR_PAD_LEFT),
-            'job_card_id' => fake()->optional(0.7)->passthrough(JobCard::factory()),
-            'customer_id' => Customer::factory(),
+            'customer_id' => fn (array $attributes) => Customer::factory()->create([
+                'tenant_id' => $attributes['tenant_id'],
+            ])->id,
+            'job_card_id' => fn (array $attributes) => fake()->boolean(70)
+                ? JobCard::factory()->create([
+                    'tenant_id' => $attributes['tenant_id'],
+                    'customer_id' => $attributes['customer_id'],
+                ])->id
+                : null,
             'invoice_date' => $invoiceDate,
             'due_date' => $dueDate,
             'status' => $status,

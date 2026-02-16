@@ -9,6 +9,7 @@ use App\Http\Requests\StoreAppointmentRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointment;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -19,14 +20,17 @@ class AppointmentController extends ApiController
     /**
      * Display a listing of appointments.
      */
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         try {
+            $perPage = $this->resolvePerPage($request);
+
             $appointments = QueryBuilder::for(Appointment::class)
                 ->allowedFilters(['status', 'customer_id', 'vehicle_id', 'appointment_date'])
                 ->allowedSorts(['appointment_date', 'start_time', 'status', 'created_at'])
                 ->allowedIncludes(['customer', 'vehicle', 'confirmedBy'])
-                ->paginate(15);
+                ->paginate($perPage)
+                ->appends($request->query());
 
             return $this->paginatedResponse(
                 $appointments,
@@ -34,7 +38,9 @@ class AppointmentController extends ApiController
                 'Appointments retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve appointments: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to retrieve appointments', 500);
         }
     }
 
@@ -56,7 +62,9 @@ class AppointmentController extends ApiController
                 201
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to create appointment: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to create appointment', 500);
         }
     }
 
@@ -73,7 +81,9 @@ class AppointmentController extends ApiController
                 'Appointment retrieved successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to retrieve appointment: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to retrieve appointment', 500);
         }
     }
 
@@ -90,7 +100,9 @@ class AppointmentController extends ApiController
                 'Appointment updated successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to update appointment: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to update appointment', 500);
         }
     }
 
@@ -107,7 +119,9 @@ class AppointmentController extends ApiController
                 'Appointment deleted successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to delete appointment: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to delete appointment', 500);
         }
     }
 
@@ -128,7 +142,9 @@ class AppointmentController extends ApiController
                 'Appointment confirmed successfully'
             );
         } catch (\Exception $e) {
-            return $this->errorResponse('Failed to confirm appointment: '.$e->getMessage(), 500);
+            report($e);
+
+            return $this->errorResponse('Failed to confirm appointment', 500);
         }
     }
 }

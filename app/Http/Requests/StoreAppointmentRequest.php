@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreAppointmentRequest extends FormRequest
 {
@@ -23,15 +24,25 @@ class StoreAppointmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        $tenantId = $this->user()->tenant_id;
+
         return [
-            'customer_id' => ['required', 'integer', 'exists:customers,id'],
-            'vehicle_id' => ['required', 'integer', 'exists:vehicles,id'],
+            'customer_id' => [
+                'required',
+                'integer',
+                Rule::exists('customers', 'id')->where('tenant_id', $tenantId),
+            ],
+            'vehicle_id' => [
+                'required',
+                'integer',
+                Rule::exists('vehicles', 'id')->where('tenant_id', $tenantId),
+            ],
             'appointment_date' => ['required', 'date', 'after_or_equal:today'],
             'start_time' => ['required', 'date_format:H:i:s'],
             'end_time' => ['required', 'date_format:H:i:s', 'after:start_time'],
             'service_type' => ['required', 'string', 'max:255'],
             'notes' => ['nullable', 'string'],
-            'status' => ['required', 'string', 'in:pending,scheduled,confirmed,in_progress,completed,cancelled,no_show'],
+            'status' => ['required', 'string', 'in:pending,confirmed,in_progress,completed,cancelled'],
         ];
     }
 

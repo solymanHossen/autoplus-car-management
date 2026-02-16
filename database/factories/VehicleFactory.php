@@ -32,7 +32,9 @@ class VehicleFactory extends Factory
 
         return [
             'tenant_id' => Tenant::factory(),
-            'customer_id' => Customer::factory(),
+            'customer_id' => fn (array $attributes) => Customer::factory()->create([
+                'tenant_id' => $attributes['tenant_id'],
+            ])->id,
             'registration_number' => strtoupper(fake()->bothify('???-####')),
             'make' => $make,
             'model' => $this->generateModel($make),

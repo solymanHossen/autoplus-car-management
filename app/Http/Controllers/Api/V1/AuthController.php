@@ -9,11 +9,11 @@ use App\Actions\Auth\RegisterTenantAction;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterTenantRequest;
 use App\Http\Resources\UserResource;
+use App\Models\LoginAttempt;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\ValidationException;
 
 /**
  * Authentication API Controller
@@ -54,17 +54,33 @@ class AuthController extends ApiController
         }
 
         $credentials = $request->validated();
+        $ipAddress = (string) $request->ip();
+        $userAgent = substr((string) $request->userAgent(), 0, 1024);
 
         // User lookup is scoped by the TenantScoped trait implicitly.
         $user = User::where('email', $credentials['email'])->first();
 
         if (! $user || ! Hash::check($credentials['password'], $user->password)) {
+            LoginAttempt::create([
+                'email' => $credentials['email'],
+                'ip_address' => $ipAddress,
+                'successful' => false,
+                'user_agent' => $userAgent,
+            ]);
+
             return $this->errorResponse('Invalid credentials', 401);
         }
 
         // Security: Verify user belongs to current tenant (Defense in Depth)
         // This is technically redundant due to TenantScoped but vital for security logic auditing.
         if ($user->tenant_id !== app('tenant')->id) {
+             LoginAttempt::create([
+                'email' => $credentials['email'],
+                'ip_address' => $ipAddress,
+                'successful' => false,
+                'user_agent' => $userAgent,
+            ]);
+
              return $this->errorResponse('Access denied.', 403);
         }
 
@@ -72,6 +88,13 @@ class AuthController extends ApiController
         // Auth::login($user); 
 
         $token = $this->createToken($user);
+
+        LoginAttempt::create([
+            'email' => $credentials['email'],
+            'ip_address' => $ipAddress,
+            'successful' => true,
+            'user_agent' => $userAgent,
+        ]);
 
         return $this->successResponse([
             'user' => new UserResource($user),

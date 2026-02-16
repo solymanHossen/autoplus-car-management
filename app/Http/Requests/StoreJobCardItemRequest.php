@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreJobCardItemRequest extends FormRequest
 {
@@ -23,8 +24,14 @@ class StoreJobCardItemRequest extends FormRequest
      */
     public function rules(): array
     {
+        $tenantId = $this->user()->tenant_id;
+
         return [
-            'product_id' => ['nullable', 'integer', 'exists:products,id'],
+            'product_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('products', 'id')->where('tenant_id', $tenantId),
+            ],
             'item_type' => ['required', 'string', 'in:service,part'],
             'quantity' => ['required', 'numeric', 'min:0.01'],
             'unit_price' => ['required', 'numeric', 'min:0'],

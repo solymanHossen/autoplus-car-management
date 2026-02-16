@@ -42,8 +42,8 @@
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/solymanHossen/autoplus-car-management.git
-cd autoplus-car-management
+git clone https://github.com/solymanHossen/autopulse.git
+cd autopulse
 ```
 
 ### 2. Install Dependencies
@@ -106,6 +106,15 @@ npm run build
 ```bash
 php artisan serve
 ```
+
+## 🐳 Docker Quick Start
+
+```bash
+docker compose up -d --build
+docker compose exec app php artisan migrate --force
+```
+
+Application URL: `http://localhost:8080`
 
 ## 🗂️ Project Structure
 

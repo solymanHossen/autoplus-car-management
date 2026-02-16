@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 
 /**
@@ -63,5 +64,19 @@ abstract class ApiController extends Controller
                 'next' => $paginator->nextPageUrl(),
             ],
         ]);
+    }
+
+    /**
+     * Resolve client-requested page size with sane limits.
+     */
+    protected function resolvePerPage(Request $request, int $default = 15, int $max = 100): int
+    {
+        $perPage = (int) $request->integer('per_page', $default);
+
+        if ($perPage < 1) {
+            return $default;
+        }
+
+        return min($perPage, $max);
     }
 }

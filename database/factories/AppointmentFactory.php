@@ -45,8 +45,13 @@ class AppointmentFactory extends Factory
 
         return [
             'tenant_id' => Tenant::factory(),
-            'customer_id' => Customer::factory(),
-            'vehicle_id' => Vehicle::factory(),
+            'customer_id' => fn (array $attributes) => Customer::factory()->create([
+                'tenant_id' => $attributes['tenant_id'],
+            ])->id,
+            'vehicle_id' => fn (array $attributes) => Vehicle::factory()->create([
+                'tenant_id' => $attributes['tenant_id'],
+                'customer_id' => $attributes['customer_id'],
+            ])->id,
             'appointment_date' => $appointmentDate,
             'start_time' => $startTime,
             'end_time' => $endTime,
@@ -54,7 +59,9 @@ class AppointmentFactory extends Factory
             'status' => $status,
             'notes' => fake()->optional(0.4)->sentence(),
             'confirmed_at' => $confirmedAt,
-            'confirmed_by' => $confirmedAt !== null ? User::factory() : null,
+            'confirmed_by' => fn (array $attributes) => $attributes['confirmed_at'] !== null
+                ? User::factory()->create(['tenant_id' => $attributes['tenant_id']])->id
+                : null,
             'created_at' => fake()->dateTimeBetween('-2 months', 'now'),
         ];
     }
@@ -73,7 +80,9 @@ class AppointmentFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'status' => 'confirmed',
             'confirmed_at' => fake()->dateTimeBetween('-5 days', 'now'),
-            'confirmed_by' => User::factory(),
+            'confirmed_by' => User::factory()->create([
+                'tenant_id' => $attributes['tenant_id'],
+            ])->id,
         ]);
     }
 
@@ -83,7 +92,9 @@ class AppointmentFactory extends Factory
             'status' => 'in_progress',
             'appointment_date' => now()->toDateString(),
             'confirmed_at' => fake()->dateTimeBetween('-2 days', 'now'),
-            'confirmed_by' => User::factory(),
+            'confirmed_by' => User::factory()->create([
+                'tenant_id' => $attributes['tenant_id'],
+            ])->id,
         ]);
     }
 
@@ -93,7 +104,9 @@ class AppointmentFactory extends Factory
             'status' => 'completed',
             'appointment_date' => fake()->dateTimeBetween('-30 days', '-1 day'),
             'confirmed_at' => fake()->dateTimeBetween('-35 days', '-2 days'),
-            'confirmed_by' => User::factory(),
+            'confirmed_by' => User::factory()->create([
+                'tenant_id' => $attributes['tenant_id'],
+            ])->id,
         ]);
     }
 

@@ -25,6 +25,7 @@ return [
         // Job Cards
         'job_cards' => [
             'view-job-cards',
+            'view-internal-notes',
             'create-job-cards',
             'edit-job-cards',
             'delete-job-cards',
@@ -123,7 +124,7 @@ return [
     'role_permissions' => [
         'owner' => ['*'], // All permissions
         'manager' => [
-            'view-job-cards', 'create-job-cards', 'edit-job-cards', 'approve-job-cards',
+            'view-job-cards', 'view-internal-notes', 'create-job-cards', 'edit-job-cards', 'approve-job-cards',
             'view-customers', 'create-customers', 'edit-customers',
             'view-vehicles', 'create-vehicles', 'edit-vehicles',
             'view-invoices', 'create-invoices', 'edit-invoices', 'approve-invoices',
@@ -142,7 +143,7 @@ return [
             'view-appointments', 'create-appointments', 'edit-appointments', 'confirm-appointments',
         ],
         'mechanic' => [
-            'view-job-cards', 'edit-job-cards',
+            'view-job-cards', 'view-internal-notes', 'edit-job-cards',
             'view-customers',
             'view-vehicles',
             'view-inventory',
