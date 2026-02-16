@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Models\Invoice;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -43,6 +44,40 @@ class StorePaymentRequest extends FormRequest
             ],
             'notes' => ['nullable', 'string'],
         ];
+    }
+
+    /**
+     * Configure the validator instance.
+     */
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validator): void {
+            $invoiceId = (int) $this->input('invoice_id');
+            $amount = (float) $this->input('amount');
+            $tenantId = (string) $this->user()->tenant_id;
+
+            if (! $invoiceId || $amount <= 0) {
+                return;
+            }
+
+            $invoice = Invoice::where('tenant_id', $tenantId)->find($invoiceId);
+
+            if (! $invoice) {
+                return;
+            }
+
+            // For update, allow keeping current amount by restoring old payment amount to effective balance.
+            $payment = $this->route('payment');
+            $existingAmount = $payment ? (float) $payment->amount : 0.0;
+            $effectiveBalance = (float) $invoice->balance + $existingAmount;
+
+            if ($amount > $effectiveBalance) {
+                $validator->errors()->add(
+                    'amount',
+                    sprintf('Payment amount cannot exceed remaining invoice balance (%.2f).', $effectiveBalance)
+                );
+            }
+        });
     }
 
     /**

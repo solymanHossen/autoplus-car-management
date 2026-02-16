@@ -13,12 +13,38 @@ use Illuminate\Http\Resources\Json\JsonResource;
 class JobCardResource extends JsonResource
 {
     /**
+     * Determine if the authenticated user can view internal job card notes.
+     */
+    private function canViewInternalNotes(Request $request): bool
+    {
+        $user = $request->user();
+
+        if (! $user) {
+            return false;
+        }
+
+        // Role-based allow list for sensitive notes.
+        if (in_array($user->role, ['owner', 'manager', 'mechanic'], true)) {
+            return true;
+        }
+
+        // Permission-based fallback (for future DB-driven permissions as well).
+        $rolePermissions = config('permissions.role_permissions', []);
+        $userPermissions = $rolePermissions[$user->role] ?? [];
+
+        return in_array('*', $userPermissions, true)
+            || in_array('view-internal-notes', $userPermissions, true);
+    }
+
+    /**
      * Transform the resource into an array.
      *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
+        $canViewInternal = $this->canViewInternalNotes($request);
+
         return [
             'id' => $this->id,
             'job_number' => $this->job_number,
@@ -30,8 +56,8 @@ class JobCardResource extends JsonResource
             'mileage_in' => $this->mileage_in,
             'mileage_out' => $this->mileage_out,
             'customer_notes' => $this->customer_notes,
-            'internal_notes' => $this->internal_notes,
-            'diagnosis_notes' => $this->diagnosis_notes,
+            'internal_notes' => $this->when($canViewInternal, $this->internal_notes),
+            'diagnosis_notes' => $this->when($canViewInternal, $this->diagnosis_notes),
             'estimated_completion' => $this->estimated_completion?->toIso8601String(),
             'actual_completion' => $this->actual_completion?->toIso8601String(),
             'subtotal' => number_format((float) $this->subtotal, 2, '.', ''),

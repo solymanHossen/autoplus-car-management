@@ -12,6 +12,7 @@ use App\Models\Payment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Spatie\QueryBuilder\QueryBuilder;
 
 /**
@@ -57,10 +58,20 @@ class PaymentController extends ApiController
                 $data['tenant_id'] = auth()->user()->tenant_id;
                 $data['received_by'] = $data['received_by'] ?? auth()->id();
 
-                $payment = Payment::create($data);
-
                 // Update invoice paid amount and balance atomically
                 $invoice = Invoice::whereKey($data['invoice_id'])->lockForUpdate()->firstOrFail();
+
+                // Security: Prevent over-collection under concurrent requests.
+                if ((float) $data['amount'] > (float) $invoice->balance) {
+                    throw ValidationException::withMessages([
+                        'amount' => [
+                            sprintf('Payment amount cannot exceed remaining invoice balance (%.2f).', (float) $invoice->balance),
+                        ],
+                    ]);
+                }
+
+                $payment = Payment::create($data);
+
                 $invoice->paid_amount += $payment->amount;
                 $invoice->balance = $invoice->total_amount - $invoice->paid_amount;
 
@@ -83,6 +94,8 @@ class PaymentController extends ApiController
                 'Payment recorded successfully',
                 201
             );
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             report($e);
 

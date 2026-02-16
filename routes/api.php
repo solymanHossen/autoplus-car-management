@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\Api\V1\AppointmentController;
+use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CustomerController;
 use App\Http\Controllers\Api\V1\InvoiceController;
@@ -45,38 +46,55 @@ Route::prefix('v1')->group(function () {
     // Protected API Routes
     Route::middleware(['auth:sanctum', 'throttle:60,1'])->group(function () {
 
-        // Customer Routes
-        Route::apiResource('customers', CustomerController::class);
+        // Customer Routes (RBAC)
+        Route::apiResource('customers', CustomerController::class)->only(['index', 'show'])->middleware('permission:view-customers');
+        Route::apiResource('customers', CustomerController::class)->only(['store'])->middleware('permission:create-customers');
+        Route::apiResource('customers', CustomerController::class)->only(['update'])->middleware('permission:edit-customers');
+        Route::apiResource('customers', CustomerController::class)->only(['destroy'])->middleware('permission:delete-customers');
 
-        // Vehicle Routes
-        Route::apiResource('vehicles', VehicleController::class);
+        // Vehicle Routes (RBAC)
+        Route::apiResource('vehicles', VehicleController::class)->only(['index', 'show'])->middleware('permission:view-vehicles');
+        Route::apiResource('vehicles', VehicleController::class)->only(['store'])->middleware('permission:create-vehicles');
+        Route::apiResource('vehicles', VehicleController::class)->only(['update'])->middleware('permission:edit-vehicles');
+        Route::apiResource('vehicles', VehicleController::class)->only(['destroy'])->middleware('permission:delete-vehicles');
 
         // Job Card Routes
         Route::prefix('job-cards')->name('job-cards.')->group(function () {
-            Route::get('/', [JobCardController::class, 'index'])->name('index');
-            Route::post('/', [JobCardController::class, 'store'])->name('store');
-            Route::get('{jobCard}', [JobCardController::class, 'show'])->name('show');
-            Route::put('{jobCard}', [JobCardController::class, 'update'])->name('update');
-            Route::delete('{jobCard}', [JobCardController::class, 'destroy'])->name('destroy');
-            Route::post('{jobCard}/items', [JobCardController::class, 'addItem'])->name('add-item');
-            Route::patch('{jobCard}/status', [JobCardController::class, 'updateStatus'])->name('update-status');
+            Route::get('/', [JobCardController::class, 'index'])->middleware('permission:view-job-cards')->name('index');
+            Route::post('/', [JobCardController::class, 'store'])->middleware('permission:create-job-cards')->name('store');
+            Route::get('{jobCard}', [JobCardController::class, 'show'])->middleware('permission:view-job-cards')->name('show');
+            Route::put('{jobCard}', [JobCardController::class, 'update'])->middleware('permission:edit-job-cards')->name('update');
+            Route::delete('{jobCard}', [JobCardController::class, 'destroy'])->middleware('permission:delete-job-cards')->name('destroy');
+            Route::post('{jobCard}/items', [JobCardController::class, 'addItem'])->middleware('permission:edit-job-cards')->name('add-item');
+            Route::patch('{jobCard}/status', [JobCardController::class, 'updateStatus'])->middleware('permission:edit-job-cards')->name('update-status');
         });
 
-        // Invoice Routes
-        Route::apiResource('invoices', InvoiceController::class);
+        // Invoice Routes (RBAC)
+        Route::apiResource('invoices', InvoiceController::class)->only(['index', 'show'])->middleware('permission:view-invoices');
+        Route::apiResource('invoices', InvoiceController::class)->only(['store'])->middleware('permission:create-invoices');
+        Route::apiResource('invoices', InvoiceController::class)->only(['update'])->middleware('permission:edit-invoices');
+        Route::apiResource('invoices', InvoiceController::class)->only(['destroy'])->middleware('permission:delete-invoices');
 
-        // Payment Routes
-        Route::apiResource('payments', PaymentController::class);
+        // Payment Routes (RBAC)
+        Route::apiResource('payments', PaymentController::class)->only(['index', 'show'])->middleware('permission:view-payments');
+        Route::apiResource('payments', PaymentController::class)->only(['store'])->middleware('permission:create-payments');
+        Route::apiResource('payments', PaymentController::class)->only(['update'])->middleware('permission:edit-payments');
+        Route::apiResource('payments', PaymentController::class)->only(['destroy'])->middleware('permission:delete-payments');
 
         // Appointment Routes
         Route::prefix('appointments')->name('appointments.')->group(function () {
-            Route::get('/', [AppointmentController::class, 'index'])->name('index');
-            Route::post('/', [AppointmentController::class, 'store'])->name('store');
-            Route::get('{appointment}', [AppointmentController::class, 'show'])->name('show');
-            Route::put('{appointment}', [AppointmentController::class, 'update'])->name('update');
-            Route::delete('{appointment}', [AppointmentController::class, 'destroy'])->name('destroy');
-            Route::post('{appointment}/confirm', [AppointmentController::class, 'confirm'])->name('confirm');
+            Route::get('/', [AppointmentController::class, 'index'])->middleware('permission:view-appointments')->name('index');
+            Route::post('/', [AppointmentController::class, 'store'])->middleware('permission:create-appointments')->name('store');
+            Route::get('{appointment}', [AppointmentController::class, 'show'])->middleware('permission:view-appointments')->name('show');
+            Route::put('{appointment}', [AppointmentController::class, 'update'])->middleware('permission:edit-appointments')->name('update');
+            Route::delete('{appointment}', [AppointmentController::class, 'destroy'])->middleware('permission:delete-appointments')->name('destroy');
+            Route::post('{appointment}/confirm', [AppointmentController::class, 'confirm'])->middleware('permission:confirm-appointments')->name('confirm');
         });
+
+        // Attachment Uploads
+        Route::post('attachments', [AttachmentController::class, 'store'])
+            ->middleware('permission:edit-job-cards')
+            ->name('attachments.store');
 
         // Dashboard Stats (placeholder for future implementation)
         Route::get('dashboard/stats', function () {
