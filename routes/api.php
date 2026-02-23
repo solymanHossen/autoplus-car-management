@@ -6,9 +6,13 @@ use App\Http\Controllers\Api\V1\AppointmentController;
 use App\Http\Controllers\Api\V1\AttachmentController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CustomerController;
+use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\InvoiceController;
 use App\Http\Controllers\Api\V1\JobCardController;
 use App\Http\Controllers\Api\V1\PaymentController;
+use App\Http\Controllers\Api\V1\ProductController;
+use App\Http\Controllers\Api\V1\SupplierController;
+use App\Http\Controllers\Api\V1\TaxRateController;
 use App\Http\Controllers\Api\V1\VehicleController;
 use Illuminate\Support\Facades\Route;
 
@@ -58,6 +62,24 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('vehicles', VehicleController::class)->only(['update'])->middleware('permission:edit-vehicles');
         Route::apiResource('vehicles', VehicleController::class)->only(['destroy'])->middleware('permission:delete-vehicles');
 
+        // Supplier Routes (Inventory RBAC)
+        Route::apiResource('suppliers', SupplierController::class)->only(['index', 'show'])->middleware('permission:view-inventory');
+        Route::apiResource('suppliers', SupplierController::class)->only(['store'])->middleware('permission:create-inventory');
+        Route::apiResource('suppliers', SupplierController::class)->only(['update'])->middleware('permission:edit-inventory');
+        Route::apiResource('suppliers', SupplierController::class)->only(['destroy'])->middleware('permission:delete-inventory');
+
+        // Product Routes (Inventory RBAC)
+        Route::apiResource('products', ProductController::class)->only(['index', 'show'])->middleware('permission:view-inventory');
+        Route::apiResource('products', ProductController::class)->only(['store'])->middleware('permission:create-inventory');
+        Route::apiResource('products', ProductController::class)->only(['update'])->middleware('permission:edit-inventory');
+        Route::apiResource('products', ProductController::class)->only(['destroy'])->middleware('permission:delete-inventory');
+
+        // Tax Rate Routes (Inventory RBAC)
+        Route::apiResource('tax-rates', TaxRateController::class)->only(['index', 'show'])->middleware('permission:view-inventory');
+        Route::apiResource('tax-rates', TaxRateController::class)->only(['store'])->middleware('permission:create-inventory');
+        Route::apiResource('tax-rates', TaxRateController::class)->only(['update'])->middleware('permission:edit-inventory');
+        Route::apiResource('tax-rates', TaxRateController::class)->only(['destroy'])->middleware('permission:delete-inventory');
+
         // Job Card Routes
         Route::prefix('job-cards')->name('job-cards.')->group(function () {
             Route::get('/', [JobCardController::class, 'index'])->middleware('permission:view-job-cards')->name('index');
@@ -92,22 +114,23 @@ Route::prefix('v1')->group(function () {
         });
 
         // Attachment Uploads
+        Route::get('attachments', [AttachmentController::class, 'index'])
+            ->middleware('permission:view-job-cards')
+            ->name('attachments.index');
+
         Route::post('attachments', [AttachmentController::class, 'store'])
             ->middleware('permission:edit-job-cards')
             ->name('attachments.store');
 
-        // Dashboard Stats (placeholder for future implementation)
-        Route::get('dashboard/stats', function () {
-            return response()->json([
-                'success' => true,
-                'data' => [
-                    'total_customers' => 0,
-                    'active_job_cards' => 0,
-                    'pending_invoices' => 0,
-                    'today_appointments' => 0,
-                ],
-                'message' => 'Dashboard statistics retrieved successfully',
-            ]);
-        })->name('dashboard.stats');
+        Route::get('attachments/{attachment}', [AttachmentController::class, 'show'])
+            ->middleware('permission:view-job-cards')
+            ->name('attachments.show');
+
+        Route::delete('attachments/{attachment}', [AttachmentController::class, 'destroy'])
+            ->middleware('permission:edit-job-cards')
+            ->name('attachments.destroy');
+
+        // Dashboard Stats
+        Route::get('dashboard/stats', [DashboardController::class, 'stats'])->name('dashboard.stats');
     });
 });

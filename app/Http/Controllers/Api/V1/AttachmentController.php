@@ -6,13 +6,36 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Api\ApiController;
 use App\Http\Requests\StoreAttachmentRequest;
+use App\Http\Resources\AttachmentResource;
 use App\Models\Attachment;
+use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Spatie\QueryBuilder\QueryBuilder;
 
 class AttachmentController extends ApiController
 {
+    /**
+     * List attachments for the authenticated tenant.
+     */
+    public function index(Request $request): JsonResponse
+    {
+        $perPage = $this->resolvePerPage($request);
+
+        $attachments = QueryBuilder::for(Attachment::class)
+            ->allowedFilters(['attachable_type', 'attachable_id', 'file_type', 'mime_type', 'uploaded_by'])
+            ->allowedSorts(['created_at', 'file_size', 'file_name'])
+            ->paginate($perPage)
+            ->appends($request->query());
+
+        return $this->paginatedResponse(
+            $attachments,
+            AttachmentResource::class,
+            'Attachments retrieved successfully'
+        );
+    }
+
     /**
      * Store a secure attachment for a tenant-scoped polymorphic model.
      */
@@ -45,17 +68,34 @@ class AttachmentController extends ApiController
             'uploaded_by' => (int) $user->id,
         ]);
 
-        return $this->successResponse([
-            'id' => $attachment->id,
-            'attachable_type' => $attachment->attachable_type,
-            'attachable_id' => $attachment->attachable_id,
-            'file_name' => $attachment->file_name,
-            'file_path' => $attachment->file_path,
-            'file_type' => $attachment->file_type,
-            'file_size' => $attachment->file_size,
-            'mime_type' => $attachment->mime_type,
-            'uploaded_by' => $attachment->uploaded_by,
-            'created_at' => $attachment->created_at?->toIso8601String(),
-        ], 'Attachment uploaded successfully', 201);
+        return $this->successResponse(new AttachmentResource($attachment), 'Attachment uploaded successfully', 201);
     }
+
+    /**
+     * Show a single attachment.
+     */
+    public function show(Attachment $attachment): JsonResponse
+    {
+        return $this->successResponse(
+            new AttachmentResource($attachment),
+            'Attachment retrieved successfully'
+        );
+    }
+
+    /**
+     * Delete an attachment and its stored file.
+     */
+    public function destroy(Attachment $attachment): JsonResponse
+    {
+        $disk = (string) config('tenant.storage_disk', 'local');
+
+        if (Storage::disk($disk)->exists($attachment->file_path)) {
+            Storage::disk($disk)->delete($attachment->file_path);
+        }
+
+        $attachment->delete();
+
+        return $this->successResponse(null, 'Attachment deleted successfully');
+    }
+
 }
